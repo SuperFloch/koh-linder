@@ -1,0 +1,28 @@
+Jouer une aventure Koh-Lanta en jeu de carte à la Reigns
+
+Toutes les décisions n'ont que deux possibilités
+
+Chaque candidat a ses stats :
+- Force/Agilité
+- Mental/Endurance
+- Social/Charisme
+
+On a une jauge de fatigue qui descend chaque jour et qui ne se recharge jamais completement par nuit
+
+Chacune de ces stats est un deck de cartes avec des bonnes ou mauvaises valeurs (Ainsi que des cartes particulières chacun)
+A certains paliers de fatigue, on retire de ces cartes
+
+Ensuite, le jeu défile en une suite de cartes représnetant chaque phase de l'aventure
+
+Plusieurs types de phase :
+- Narration (Des cartes qui défilent sans décision)
+- Epreuve (Des cartes avec parfois des évènements qui font tirer une carte de stat pour voir la suite)
+- Camp
+	- Recolte
+		- Pêche
+		- Bois
+		- Collier/Objectifs (Feu)
+	- Repos (Dialogue)
+		- Amical
+		- Strategie
+- Conseil
