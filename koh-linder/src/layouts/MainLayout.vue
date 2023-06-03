@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-page-container>
+    <q-page-container class="fullScreen">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -16,3 +16,10 @@ export default defineComponent({
 
 })
 </script>
+<style>
+.fullScreen{
+  height: 100vh;
+  width: 100vw;
+  overflow-y: hidden;
+}
+</style>
