@@ -31,15 +31,14 @@ class Effect{
 }
 class Card{
     
-    constructor(name = ""){
-        this.name = name;
-        this.type = CardType.NARRATION;
-        this.theme = CardTheme.NONE;
-        this.text = "";
-        this.effects = {
-            left: [],
-            right: []
-        };
+    constructor(jsonObject){
+        this.single_use = jsonObject.single_use;
+        this.id = jsonObject.id;
+        this.name = jsonObject.name;
+        this.type = jsonObject.type;
+        this.theme = jsonObject.theme;
+        this.text = jsonObject.text;
+        this.choices = jsonObject.choices;
     }
 }
 export {Card, Effect, CardType, CardTheme, EffectType}
