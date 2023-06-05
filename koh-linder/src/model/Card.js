@@ -13,32 +13,36 @@ const CardTheme = {
     INTRO: 'INTRO',
     DIALOG: 'DIALOG',
 };
-const EffectType = {
-    ENERGY: 'ENERGY',
-    ELIMINATION: 'ELIMINATION',
-    NONE: 'NONE'
-}
-/**
- * 
- */
-class Effect{
-    constructor(){
+class Card {
+    constructor() {
+        this.single_use = false;
+        this.id = "rand" + Math.floor(Math.random() * 5000);
+        this.name = "";
+        this.type = CardType.NARRATION;
+        this.theme = CardTheme.INTRO;
         this.text = "";
-        this.type = EffectType.NONE;
-        this.value = 0;
-        this.target = "";
+        this.choices = {
+            left: {
+                text: "OK",
+                next: ""
+            },
+            right: {
+                text: "OK",
+                next: ""
+            }
+        };
+    }
+
+    static deserialize(jsonObject) {
+        var card = new Card();
+        card.single_use = jsonObject.single_use;
+        card.id = jsonObject.id;
+        card.name = jsonObject.name;
+        card.type = jsonObject.type;
+        card.theme = jsonObject.theme;
+        card.text = jsonObject.text;
+        card.choices = jsonObject.choices;
+        return card;
     }
 }
-class Card{
-    
-    constructor(jsonObject){
-        this.single_use = jsonObject.single_use;
-        this.id = jsonObject.id;
-        this.name = jsonObject.name;
-        this.type = jsonObject.type;
-        this.theme = jsonObject.theme;
-        this.text = jsonObject.text;
-        this.choices = jsonObject.choices;
-    }
-}
-export {Card, Effect, CardType, CardTheme, EffectType}
+export { Card, CardType, CardTheme }
