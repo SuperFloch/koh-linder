@@ -20,6 +20,7 @@ class Card {
         this.name = "";
         this.type = CardType.NARRATION;
         this.theme = CardTheme.INTRO;
+        this.img = "";
         this.text = "";
         this.choices = {
             left: {
@@ -40,6 +41,7 @@ class Card {
         card.name = jsonObject.name;
         card.type = jsonObject.type;
         card.theme = jsonObject.theme;
+        card.img = jsonObject.img;
         card.text = jsonObject.text;
         card.choices = jsonObject.choices;
         return card;
