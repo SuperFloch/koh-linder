@@ -4,7 +4,7 @@
             "id": "0",
             "single_use": true,
             "name": "Denis",
-            "theme": "DENIS",
+            "theme": "INTRO",
             "type": "",
             "text": "Salut à tous vous voulez aller à Bora-Bora ?",
             "choices": {
@@ -36,7 +36,7 @@
             "id": "1",
             "single_use": false,
             "name": "Tourcoing",
-            "theme": "DENIS",
+            "theme": "INTRO",
             "type": "",
             "text": "Tant pis, vous voila à tourcoing",
             "choices": {
@@ -68,7 +68,7 @@
             "id": "2",
             "single_use": false,
             "name": "Bora bora",
-            "theme": "Undef",
+            "theme": "DIALOG",
             "type": "",
             "text": "Et bien vous y voila !",
             "choices": {

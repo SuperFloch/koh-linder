@@ -9,7 +9,7 @@
                 </div>
             </div>
         </div>
-        <EditorModal class="modal absolute-center" :class="{'hidden': !isModalOpen}" ref="editorModal"/>
+        <EditorModal class="modal absolute-center" :class="{'hidden': !isModalOpen}" ref="editorModal" @change="onChange"/>
     </div>
 </template>
 <script>
@@ -17,7 +17,7 @@ import { defineComponent } from 'vue'
 import { Card } from "src/model/Card";
 import EditorCard from "src/components/editor/EditorCard.vue"
 import EditorModal from "src/components/editor/EditorModal.vue"
-import gameCards from 'src/assets/cards'
+import CardManager from 'src/assets/cards'
 import EditorCardVue from 'src/components/editor/EditorCard.vue';
 
 export default defineComponent({
@@ -32,7 +32,7 @@ export default defineComponent({
         }
     },
     mounted: function(){
-        this.allCards = this.groupByTheme(gameCards);
+        this.allCards = this.groupByTheme(CardManager.getAll());
     },
     methods:{
         groupByTheme(cards){
@@ -51,6 +51,10 @@ export default defineComponent({
         },
         toggleModal(){
             this.isModalOpen = ! this.isModalOpen;
+        },
+        onChange(){
+            console.log(this.allCards)
+            CardManager.saveAllGrouped(this.allCards)
         }
     }
 })

@@ -4,6 +4,12 @@
         <input v-model="cardModel.single_use" type="checkbox" @change="onChange"/>
         <input v-model="cardModel.name" type="text" @change="onChange"/>
         <input v-model="cardModel.text" type="text" @change="onChange"/>
+        <select v-model="cardModel.theme">
+            <option v-for="opt, index in Object.keys(cardTheme)" :key="index">{{ opt }}</option>
+        </select>
+        <select v-model="cardModel.type">
+            <option v-for="opt, index in Object.keys(cardType)" :key="index">{{ opt }}</option>
+        </select>
     </div>
 </template>
 <script>
@@ -11,14 +17,18 @@ import { defineComponent } from 'vue'
 import {Card, CardTheme, CardType} from "src/model/Card"
 
 export default defineComponent({
+    emits: ['change'],
     data: function(){
         return {
-            cardModel: {}
+            cardModel: {},
+            cardTheme: CardTheme,
+            cardType: CardType
         }
     },
     methods:{
         onChange(){
-            console.log(this.cardModel)
+            console.log(this.cardModel);
+            this.$emit('change');
         },
         load(theCard){
             console.log(theCard)
@@ -27,6 +37,7 @@ export default defineComponent({
     },
     mounted: function(){
         // this.cardModel = this.card;
+        console.log(CardTheme)
     }
 })
 </script>

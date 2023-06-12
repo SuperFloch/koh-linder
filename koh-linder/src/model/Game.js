@@ -1,5 +1,5 @@
 import { Card } from "./Card";
-import gameCards from 'src/assets/cards'
+import CardManager from 'src/assets/cards'
 import { Candidate } from "./Character";
 import { Team, TeamColor } from "./Team";
 const GAME_DEFAULT_DURATION = 40;
@@ -14,7 +14,7 @@ class Game {
         this.cardQueue = [];
         this.currentCardIndex = 0;
 
-        this.cardPile = gameCards;
+        this.cardPile = CardManager.getAll();
         this.cardQueue = [];
 
         this.teams = [];
