@@ -17,7 +17,6 @@ import { defineComponent } from 'vue'
 import { Card } from "src/model/Card";
 import EditorCard from "src/components/editor/EditorCard.vue"
 import EditorModal from "src/components/editor/EditorModal.vue"
-import CardManager from 'src/assets/cards'
 import EditorCardVue from 'src/components/editor/EditorCard.vue';
 
 export default defineComponent({
@@ -32,7 +31,9 @@ export default defineComponent({
         }
     },
     mounted: function(){
-        this.allCards = this.groupByTheme(CardManager.getAll());
+        window.ipcRenderer.invoke('cards:getAll').then((cards)=>{
+            this.allCards = this.groupByTheme(cards);
+        });
     },
     methods:{
         groupByTheme(cards){
@@ -54,7 +55,7 @@ export default defineComponent({
         },
         onChange(){
             console.log(this.allCards)
-            CardManager.saveAllGrouped(this.allCards)
+            window.ipcRenderer.send('cards:save', JSON.stringify(this.allCards));
         }
     }
 })

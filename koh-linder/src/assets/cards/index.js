@@ -1,12 +1,15 @@
-import introCards from 'src/assets/cards/global/intro.json';
 import { Card } from 'src/model/Card';
 const fs = require('fs')
+const cardFolder = 'src/assets/cards/global';
 
 class CardManager {
     static getAll() {
         var cardList = [];
-        introCards.cards.forEach((c) => {
-            cardList.push(Card.deserialize(c));
+        fs.readdirSync(cardFolder).forEach(file => {
+            var content = fs.readFileSync(cardFolder + '/' + file);
+            JSON.parse(content).cards.forEach((c) => {
+                cardList.push(Card.deserialize(c));
+            });
         });
         return cardList
     }
@@ -19,7 +22,7 @@ class CardManager {
     }
     static saveAllGrouped(grouped) {
         Object.keys(grouped).forEach((g) => {
-            fs.writeFileSync('src/assets/cards/global/' + g.toLowerCase() + '.json', JSON.stringify(grouped[g]));
+            fs.writeFileSync('src/assets/cards/global/' + g.toLowerCase() + '.json', JSON.stringify({ cards: grouped[g] }));
             console.log('Saved : ', 'src/assets/cards/global/' + g.toLowerCase() + '.json')
         });
     }

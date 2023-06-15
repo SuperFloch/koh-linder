@@ -10,17 +10,27 @@
         <select v-model="cardModel.type">
             <option v-for="opt, index in Object.keys(cardType)" :key="index">{{ opt }}</option>
         </select>
+        <div>
+            <h6>Choix :</h6>
+            <div class="col">
+                <EditorChoice v-model="cardModel.choices.left" @change="onChange"/>
+            </div>
+        </div>
     </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import {Card, CardTheme, CardType} from "src/model/Card"
+import EditorChoice from './EditorChoice.vue'
 
 export default defineComponent({
     emits: ['change'],
+    components: {
+        EditorChoice
+    },
     data: function(){
         return {
-            cardModel: {},
+            cardModel: {choices: {left:{}, right:{}}},
             cardTheme: CardTheme,
             cardType: CardType
         }
