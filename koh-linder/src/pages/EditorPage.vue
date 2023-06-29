@@ -9,7 +9,7 @@
                 </div>
             </div>
         </div>
-        <EditorModal class="modal absolute-center" :class="{'hidden': !isModalOpen}" ref="editorModal" @change="onChange"/>
+        <EditorModal class="modal absolute-center" :class="{'hidden': !isModalOpen}" ref="editorModal" @change="onChange" :all-cards="allCards"/>
     </div>
 </template>
 <script>
@@ -69,6 +69,6 @@ export default defineComponent({
     top: auto;
     bottom: 0;
     background-color: rgb(223, 223, 136);
-    width: 20vw;
+    width: 40vw;
 }
 </style>

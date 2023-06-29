@@ -1,6 +1,9 @@
 import { Card } from "./Card";
 import { TeamColor } from "./Team";
 
+const Attribute = {
+    STR: "STR"
+};
 
 class Character {
     constructor(name) {
@@ -44,4 +47,4 @@ class Candidate extends Character {
         return theCard;
     }
 }
-export { Character, Candidate }
+export { Character, Candidate, Attribute }
