@@ -1,15 +1,17 @@
 <template>
     <div class="p-relative">
         <h1>Editor</h1>
+        <button @click="refresh">Refresh</button>
         <div class="cardGrid">
             <div v-for="theme, index in Object.keys(allCards)" :key="index">
                 <div>{{ theme }}</div>
                 <div class="cardRow">
                     <EditorCard  v-for="card, cIndex in allCards[theme]" :key="cIndex" :card="card" class="col cardCol" @click="onCardClick(card)"/>
+                    <button @click="addCard(theme)">+</button>
                 </div>
             </div>
         </div>
-        <EditorModal class="modal absolute-center" :class="{'hidden': !isModalOpen}" ref="editorModal" @change="onChange" :all-cards="allCards"/>
+        <EditorModal class="modal absolute-center" :class="{'hidden': !isModalOpen}" ref="editorModal" @change="onChange" :all-cards="allCards" @validate="toggleModal(false)"/>
     </div>
 </template>
 <script>
@@ -31,9 +33,7 @@ export default defineComponent({
         }
     },
     mounted: function(){
-        window.ipcRenderer.invoke('cards:getAll').then((cards)=>{
-            this.allCards = this.groupByTheme(cards);
-        });
+        this.refresh();
     },
     methods:{
         groupByTheme(cards){
@@ -48,14 +48,22 @@ export default defineComponent({
         },
         onCardClick(card){
             this.$refs.editorModal.load(card);
-            //this.toggleModal();
+            this.toggleModal(true);
         },
-        toggleModal(){
-            this.isModalOpen = ! this.isModalOpen;
+        toggleModal(showIt){
+            this.isModalOpen = showIt;
         },
         onChange(){
-            console.log(this.allCards)
             window.ipcRenderer.send('cards:save', JSON.stringify(this.allCards));
+        },
+        addCard(theme){
+            this.allCards[theme].push(new Card());
+            this.onChange();
+        },
+        refresh(){
+            window.ipcRenderer.invoke('cards:getAll').then((cards)=>{
+                this.allCards = this.groupByTheme(cards);
+            });
         }
     }
 })
@@ -66,9 +74,8 @@ export default defineComponent({
     grid-template-columns: repeat(8, 1fr);
 }
 .modal{
-    top: auto;
-    bottom: 0;
-    background-color: rgb(223, 223, 136);
-    width: 40vw;
+    width: 80vw;
+    top: 20vh;
+    transform: none;
 }
 </style>
