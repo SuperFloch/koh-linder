@@ -6,9 +6,10 @@ const Attribute = {
 };
 
 class Character {
-    constructor(name) {
-        this.name = name;
-        this.cards = [];
+    constructor(charEntity) {
+        this.name = charEntity.name;
+        this.cards = charEntity.cards;
+        this.sex = charEntity.sex;
     }
 }
 class Candidate extends Character {

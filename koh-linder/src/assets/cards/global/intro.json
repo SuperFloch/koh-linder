@@ -1,1 +1,66 @@
-{"cards":[{"single_use":false,"id":"Nouveau","name":"","type":"NARRATION","theme":"DIALOG","img":"","text":"","choices":{"left":{"text":"OK","next":""},"right":{"text":"OK","next":""}}},{"single_use":true,"id":"0","name":"Denis","type":"","theme":"INTRO","text":"Salut à tous vous voulez aller à Bora-Bora ?","choices":{"left":{"next":"TEST:{player}:STR:7:ID§2:ID§2","text":"Non"},"right":{"effects":[{"type":"","value":"","target":""}],"text":"Oui","next":"ID:2"}}},{"single_use":false,"id":"1","name":"Tourcoing","type":"","theme":"INTRO","text":"Tant pis, vous voila à tourcoing","choices":{"left":{"next":"ID:0","text":"En fait je veux aller à Bora bora"},"right":{"next":"ID:1","text":"J'y reste !"}}}]}
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "Nouveau",
+            "name": "",
+            "type": "NARRATION",
+            "theme": "INTRO",
+            "img": "",
+            "text": "",
+            "choices": {
+                "left": {
+                    "text": "OK",
+                    "next": ""
+                },
+                "right": {
+                    "text": "OK",
+                    "next": ""
+                }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "0",
+            "name": "Denis",
+            "type": "",
+            "theme": "INTRO",
+            "text": "Salut à tous vous voulez aller à Bora-Bora ?",
+            "choices": {
+                "left": {
+                    "next": "TEST:{player}:STR:7:ID§2:ID§2",
+                    "text": "Non"
+                },
+                "right": {
+                    "effects": [
+                        {
+                            "type": "",
+                            "value": "",
+                            "target": ""
+                        }
+                    ],
+                    "text": "Oui",
+                    "next": "ID:2"
+                }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "1",
+            "name": "Tourcoing",
+            "type": "",
+            "theme": "INTRO",
+            "text": "Tant pis, vous voila à tourcoing",
+            "choices": {
+                "left": {
+                    "next": "ID:0",
+                    "text": "En fait je veux aller à Bora bora"
+                },
+                "right": {
+                    "next": "ID:1",
+                    "text": "J'y reste !"
+                }
+            }
+        }
+    ]
+}

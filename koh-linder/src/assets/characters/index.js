@@ -3,7 +3,7 @@ import { Character } from 'src/model/Character';
 
 var charList = [];
 characters.characters.forEach((c)=>{
-    charList.push(new Character(c.name));
+    charList.push(new Character(c));
 });
 
 export default charList

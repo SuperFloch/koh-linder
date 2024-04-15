@@ -2,7 +2,7 @@
     <div class="stretch">
         <GameTopBar class="topbar" :game="game"/>
         <div class="swipeListener stretch" ref="swipe">
-            <div class="currentCard stretch" ref="currentCard">
+            <div class="currentCard stretch" ref="currentCard" v-if="game.cardQueue[game.currentCardIndex]">
                 <div :class="{'hidden': !slidingLeft}">{{ (game.cardQueue[game.currentCardIndex]).choices.left.text }}</div>
                 <div :class="{'hidden': !slidingRight}">{{ (game.cardQueue[game.currentCardIndex]).choices.right.text }}</div>
                 <div class="hint"></div>

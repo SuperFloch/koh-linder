@@ -1,5 +1,5 @@
 import { Card } from "./Card";
-import CardManager from 'src/assets/cards'
+// import CardManager from 'src/assets/cards'
 import { Candidate } from "./Character";
 import { Team, TeamColor } from "./Team";
 const GAME_DEFAULT_DURATION = 40;
@@ -14,7 +14,7 @@ class Game {
         this.cardQueue = [];
         this.currentCardIndex = 0;
 
-        this.cardPile = CardManager.getAll();
+        // this.cardPile = CardManager.getAll();
         this.cardQueue = [];
 
         this.teams = [];
@@ -26,7 +26,7 @@ class Game {
         this.teams.push(redteam);
         this.teams.push(yellowTeam);
 
-        this.cardQueue.push(this.cardPile[0]);
+        // this.cardQueue.push(this.cardPile[0]);
         var player = new Candidate("Bobby");
         player.team = TeamColor.RED
         player.isPlayer = true;

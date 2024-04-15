@@ -22,7 +22,7 @@ class CardManager {
     }
     static saveAllGrouped(grouped) {
         Object.keys(grouped).forEach((g) => {
-            fs.writeFileSync('src/assets/cards/global/' + g.toLowerCase() + '.json', JSON.stringify({ cards: grouped[g] }));
+            fs.writeFileSync('src/assets/cards/global/' + g.toLowerCase() + '.json', JSON.stringify({ cards: grouped[g] }, null, " "));
             console.log('Saved : ', 'src/assets/cards/global/' + g.toLowerCase() + '.json')
         });
     }
