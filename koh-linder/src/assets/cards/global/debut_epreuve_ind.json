@@ -1,0 +1,23 @@
+{
+ "cards": [
+  {
+   "single_use": false,
+   "id": "ES_equilibre_sur_l_eau",
+   "name": "Equilibre sur l'eau",
+   "type": "",
+   "theme": "DEBUT_EPREUVE_IND",
+   "img": "",
+   "text": "Epreuve mythique, l'équilibre sur l'eau",
+   "choices": {
+    "left": {
+     "next": "ID:0",
+     "text": "En place"
+    },
+    "right": {
+     "text": "En place",
+     "next": ""
+    }
+   }
+  }
+ ]
+}

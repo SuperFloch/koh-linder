@@ -1,0 +1,59 @@
+{
+ "cards": [
+  {
+   "single_use": false,
+   "id": "ES_equilibre_sur_l_eau_1",
+   "name": "Equilibre sur l'eau en place",
+   "type": "",
+   "theme": "EQUILIBRE_SUR_L_EAU",
+   "img": "",
+   "text": "A vos marque près partez",
+   "choices": {
+    "left": {
+     "next": "ID:0",
+     "text": "En place"
+    },
+    "right": {
+     "text": "En place",
+     "next": ""
+    }
+   }
+  },
+  {
+   "single_use": false,
+   "id": "rand1260",
+   "name": "Premier obstacle",
+   "type": "NARRATION",
+   "theme": "EQUILIBRE_SUR_L_EAU",
+   "img": "",
+   "text": "Première poutre suspendue",
+   "choices": {
+    "left": {
+     "text": "OK",
+     "next": ""
+    },
+    "right": {
+     "text": "OK",
+     "next": ""
+    }
+   }
+  },
+  {
+   "single_use": false,
+   "id": "rand3432",
+   "name": "Plouf_1",
+   "type": "NARRATION",
+   "theme": "EQUILIBRE_SUR_L_EAU",
+   "img": "",
+   "text": "C'est la chute, il faut repartir au début du parcours",
+   "choices": {
+    "left": {
+     "next": ""
+    },
+    "right": {
+     "next": ""
+    }
+   }
+  }
+ ]
+}

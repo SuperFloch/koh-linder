@@ -1,5 +1,5 @@
 const routes = [{
-        path: '/',
+        path: '/editor',
         component: () =>
             import ('layouts/MainLayout.vue'),
         children: [{
@@ -9,7 +9,7 @@ const routes = [{
         }]
     },
     {
-        path: '/editor',
+        path: '/',
         component: () =>
             import ('layouts/MainLayout.vue'),
         children: [{

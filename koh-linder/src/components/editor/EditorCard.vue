@@ -8,16 +8,16 @@
             <div>{{ card.text }}</div>
             <hr>
             <div class="choice leftChoice">
+                <div>{{ card.choices.left.text }}</div>
                 <div>
                     {{ nextToString(card.choices.left.next)  }}
                 </div>
-                <div>{{ card.choices.left.text }}</div>
             </div>
             <div class="choice rightChoice">
+                <div>{{ card.choices.right.text }}</div>
                 <div>
                     {{ nextToString(card.choices.right.next) }}
                 </div>
-                <div>{{ card.choices.right.text }}</div>
             </div>
         </div>
     </div>
@@ -53,14 +53,14 @@ export default defineComponent({
                 case 'THEME':
                     return 'Theme -> '+parts[1]
                 case 'TEST':
-                    return parts[1]+' '+parts[2]+' Test'
+                    return parts[1]+' '+parts[2]+' S->' + this.nextToString(parts[4].split('§').join(':'))+ ' F->'+parts[5]
                 default:
                     return n
             }
         }
     },
     mounted(){
-        console.log(this.card)
+        // console.log(this.card)
     }
 })
 </script>
