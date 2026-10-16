@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "sling_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FRONDE",
+            "img": "",
+            "text": "« Épreuve de la fronde ! Chaque équipe fait face à huit cibles, de plus en plus lointaines. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:sling_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:sling_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "sling_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FRONDE",
+            "img": "",
+            "text": "« Vous tirez en relais, chacun au moins une fois. Trente projectiles par équipe, pas un de plus ! L'équipe qui abat toutes ses cibles gagne, sinon celle qui en a abattu le plus. »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "SLING" }
+            ],
+            "choices": {
+                "left": { "text": "À vos frondes !", "next": "ID:sling_03_tour" },
+                "right": { "text": "À vos frondes !", "next": "ID:sling_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "sling_03_tour",
+            "name": "La fronde",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_FRONDE",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "SLING", "onFinish": "ID:sling_04_dernier" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "sling_04_dernier",
+            "name": "La cible décisive !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FRONDE",
+            "img": "",
+            "text": "{winnerHero} abat la cible décisive ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "SLING" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:sling_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:sling_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "sling_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FRONDE",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve de la fronde ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "SLING" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

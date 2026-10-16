@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "puzzle_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PUZZLE",
+            "img": "",
+            "text": "« Épreuve du puzzle aquatique ! Devant chaque équipe flottent vingt-cinq gros morceaux d'une même image. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:puzzle_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:puzzle_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "puzzle_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PUZZLE",
+            "img": "",
+            "text": "« Un seul d'entre vous reste hors de l'eau : le meneur. Lui seul voit l'image, et il doit guider les autres, qui pousseront les pièces dans l'eau. La première équipe qui reconstitue son puzzle l'emporte ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "WATER_PUZZLE" }
+            ],
+            "choices": {
+                "left": { "text": "À l'eau !", "next": "ID:puzzle_03_tour" },
+                "right": { "text": "À l'eau !", "next": "ID:puzzle_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "puzzle_03_tour",
+            "name": "Le puzzle aquatique",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_PUZZLE",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "WATER_PUZZLE", "onFinish": "ID:puzzle_04_dernier" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "puzzle_04_dernier",
+            "name": "Puzzle terminé !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PUZZLE",
+            "img": "",
+            "text": "Grâce aux indications de {winnerHero}, la dernière pièce trouve sa place ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "WATER_PUZZLE" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:puzzle_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:puzzle_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "puzzle_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PUZZLE",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve du puzzle aquatique ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "WATER_PUZZLE" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

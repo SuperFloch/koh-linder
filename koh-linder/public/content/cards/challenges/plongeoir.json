@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "board_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEOIR",
+            "img": "",
+            "text": "« Épreuve du plongeoir ! Une plateforme est suspendue au-dessus de l'eau. L'un d'entre vous va s'y tenir en équilibre, les autres vont tirer sur la corde. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:board_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:board_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "board_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEOIR",
+            "img": "",
+            "text": "« Plus le temps passe, plus la corde pèse. La première équipe qui lâche prise fait tomber son camarade à l'eau, et offre la victoire à l'autre. Choisissez qui montera ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "DIVING_BOARD" }
+            ],
+            "choices": {
+                "left": { "text": "Compris !", "next": "ID:board_03_tour" },
+                "right": { "text": "Compris !", "next": "ID:board_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "board_03_tour",
+            "name": "Le plongeoir",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_PLONGEOIR",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "DIVING_BOARD", "onFinish": "ID:board_04_chute" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "board_04_chute",
+            "name": "Plouf !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEOIR",
+            "img": "",
+            "text": "La corde lâche : {fallenName} tombe à l'eau ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "DIVING_BOARD" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:board_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:board_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "board_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEOIR",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve du plongeoir ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "DIVING_BOARD" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

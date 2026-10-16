@@ -1,0 +1,105 @@
+{
+    "cards": [
+        {
+            "single_use": true,
+            "id": "swim_01_saut",
+            "name": "Le grand saut",
+            "type": "DICE",
+            "theme": "EPREUVE_NAGE",
+            "img": "",
+            "text": "Vous voilà au bord du bateau, face à la mer. Dix cases vous séparent de la rive. Tout commence par le plongeon : un test d'agilité.",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "SWIM", "params": { "length": 10, "diveThreshold": 12, "soloThreshold": 14, "groupThreshold": 10 } }
+            ],
+            "dice": {
+                "entity": "{player}",
+                "stat": "AGI",
+                "threshold": 12,
+                "success": "ID:swim_01a_carpe",
+                "fail": "ID:swim_01b_plouf"
+            },
+            "choices": {
+                "left": { "text": "Sauter (test d'AGI)", "next": "" },
+                "right": { "text": "Sauter (test d'AGI)", "next": "" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "swim_01a_carpe",
+            "name": "Plongeon carpé",
+            "type": "NARRATION",
+            "theme": "EPREUVE_NAGE",
+            "img": "",
+            "text": "Réussite ({lastRoll}). Un magnifique plongeon carpé, qui impressionne la galerie ! Vous prenez de l'avance : deuxième case.",
+            "on_enter": [
+                { "type": "CHALLENGE_MOVE", "target": "SWIM", "about": "{player}", "value": 2 }
+            ],
+            "choices": {
+                "left": { "text": "Nager", "next": "ID:swim_02_tour" },
+                "right": { "text": "Nager", "next": "ID:swim_02_tour" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "swim_01b_plouf",
+            "name": "Plouf",
+            "type": "NARRATION",
+            "theme": "EPREUVE_NAGE",
+            "img": "",
+            "text": "Échec ({lastRoll}). Vous tombez simplement à l'eau, sans élégance ni avantage. Première case.",
+            "on_enter": [
+                { "type": "CHALLENGE_MOVE", "target": "SWIM", "about": "{player}", "value": 1 }
+            ],
+            "choices": {
+                "left": { "text": "Nager", "next": "ID:swim_02_tour" },
+                "right": { "text": "Nager", "next": "ID:swim_02_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "swim_02_tour",
+            "name": "En route vers la rive",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_NAGE",
+            "img": "",
+            "text": "{raceLog} Comment avancez-vous vers la rive ?",
+            "challenge": { "id": "SWIM", "onFinish": "ID:swim_03_rive" },
+            "choices": {
+                "left": { "text": "Nager seul (SWI, +2 si réussi)", "next": "" },
+                "right": { "text": "Nager avec les autres (SOC, +1)", "next": "" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "swim_03_rive",
+            "name": "La rive !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_NAGE",
+            "img": "",
+            "text": "{raceLog} Vous atteignez la rive en {playerRankLabel} position ! {raceWinner} a touché terre en premier.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "SWIM" }
+            ],
+            "choices": {
+                "left": { "text": "Reprendre son souffle", "next": "ID:swim_04_denis" },
+                "right": { "text": "Reprendre son souffle", "next": "ID:swim_04_denis" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "swim_04_denis",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_NAGE",
+            "img": "",
+            "text": "« Félicitations, aventuriers ! Vous avez tous atteint la rive. Votre aventure Koh-Lanta peut vraiment commencer. »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "SWIM" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:fire_01_accueil" },
+                "right": { "text": "Suivant", "next": "ID:fire_01_accueil" }
+            }
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "myriam_2012",
+  "name": "Myriam",
+  "sex": "F",
+  "age": 34,
+  "job": "Pharmacienne",
+  "rarity": "RARE",
+  "unlockCost": 0,
+  "bio": "Pharmacienne de quartier, Myriam connaît tout le monde et sait écouter. Observatrice et chaleureuse, elle devine une grippe à dix mètres et une rancune à vingt. Elle s'est inscrite à l'aventure pour sortir de son officine, et pour prouver qu'on peut survivre sans ordonnance.",
+  "attributes": {
+    "STR": 5,
+    "INT": 7,
+    "SWI": 6,
+    "AGI": 5,
+    "OBS": 8,
+    "SOC": 9
+  },
+  "cards": []
+}

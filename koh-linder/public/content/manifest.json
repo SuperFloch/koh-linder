@@ -1,0 +1,135 @@
+{
+    "start": "intro_01_bienvenue",
+    "cards": [
+        "cards/introduction.json",
+        "cards/challenges/epreuve_nage.json",
+        "cards/challenges/epreuve_feu.json",
+        "cards/challenges/flambeaux.json",
+        "cards/challenges/elastiques.json",
+        "cards/challenges/plongee.json",
+        "cards/challenges/poids.json",
+        "cards/challenges/poteries.json",
+        "cards/challenges/bobine.json",
+        "cards/challenges/fronde.json",
+        "cards/challenges/plongeoir.json",
+        "cards/challenges/puzzle.json",
+        "cards/equipes.json",
+        "cards/camp.json"
+    ],
+    "challenges": [
+        {
+            "id": "SWIM",
+            "name": "Nage jusqu'à la rive",
+            "description": "Du bateau à la rive : plongeon, puis nager seul ou avec les autres. Épreuve individuelle de l'introduction.",
+            "context": "INDIVIDUAL",
+            "random": false,
+            "start": "swim_01_saut",
+            "end": "swim_04_denis"
+        },
+        {
+            "id": "FIRE_COURSE",
+            "name": "Parcours et feu (binômes)",
+            "description": "Parcours d'obstacles, binômes mixtes par couleur, courte échelle, puis allumer un feu au silex. Première épreuve de l'aventure.",
+            "context": "INDIVIDUAL",
+            "random": false,
+            "start": "fire_01_accueil",
+            "end": "fire_07_denis"
+        },
+        {
+            "id": "TORCHES",
+            "name": "Les flambeaux",
+            "description": "Transporter une lourde caisse de combustible à travers des obstacles, allumer le flambeau, revenir, puis embraser la vasque au sommet du mât.",
+            "context": "TEAM",
+            "random": true,
+            "start": "torch_01_intro",
+            "end": "torch_05_fin"
+        },
+        {
+            "id": "ELASTICS",
+            "name": "Les élastiques",
+            "description": "Attachée par un élastique, toute l'équipe ramasse 5 bâtons de plus en plus loin, puis le poignard.",
+            "context": "TEAM",
+            "random": true,
+            "start": "elastic_01_intro",
+            "end": "elastic_05_fin"
+        },
+        {
+            "id": "DIVE_RELAY",
+            "name": "La plongée",
+            "description": "Relais de plongeurs : 10 colliers accrochés de plus en plus profond.",
+            "context": "TEAM",
+            "random": true,
+            "start": "dive_01_intro",
+            "end": "dive_05_fin"
+        },
+        {
+            "id": "SUNKEN_WEIGHTS",
+            "name": "Les poids immergés",
+            "description": "Relais en apnée : ramener 4 poids coulés à des distances croissantes de la case départ.",
+            "context": "TEAM",
+            "random": true,
+            "start": "weights_01_intro",
+            "end": "weights_05_fin"
+        },
+        {
+            "id": "POTTERY",
+            "name": "Les poteries",
+            "description": "Relais : nager jusqu'à une plateforme, sauter pour briser une poterie contenant un collier, le ramener au départ.",
+            "context": "TEAM",
+            "random": true,
+            "start": "pottery_01_intro",
+            "end": "pottery_05_fin"
+        },
+        {
+            "id": "SPOOL",
+            "name": "La bobine",
+            "description": "Un grimpeur par équipe escalade la tour pour bloquer la bobine adverse pendant que le reste de l'équipe traîne un lourd coffre jusqu'à l'arrivée.",
+            "context": "TEAM",
+            "random": true,
+            "start": "spool_01_intro",
+            "end": "spool_05_fin"
+        },
+        {
+            "id": "SLING",
+            "name": "La fronde",
+            "description": "Relais de tireurs : abattre 8 cibles de plus en plus lointaines avec 30 projectiles.",
+            "context": "TEAM",
+            "random": true,
+            "start": "sling_01_intro",
+            "end": "sling_05_fin"
+        },
+        {
+            "id": "DIVING_BOARD",
+            "name": "Le plongeoir",
+            "description": "Épreuve d'endurance : tirer sur une corde pour maintenir en équilibre un camarade sur une plateforme suspendue.",
+            "context": "TEAM",
+            "random": true,
+            "start": "board_01_intro",
+            "end": "board_05_fin"
+        },
+        {
+            "id": "WATER_PUZZLE",
+            "name": "Le puzzle aquatique",
+            "description": "Un meneur hors de l'eau guide son équipe pour reconstituer un puzzle de 5 × 5 pièces flottantes.",
+            "context": "TEAM",
+            "random": true,
+            "start": "puzzle_01_intro",
+            "end": "puzzle_05_fin"
+        }
+    ],
+    "characters": [
+        "myriam_2012",
+        "thierry_2012",
+        "phil_2012",
+        "laurent_2012"
+    ],
+    "resources": [
+        "generation",
+        "regions",
+        "firstnames_male",
+        "firstnames_female",
+        "jobs",
+        "team_names",
+        "hot_meals"
+    ]
+}

@@ -36,8 +36,12 @@ export default defineComponent({
     computed: {
         computeColor(){
             switch(this.card.type){
+                case 'DICE':
+                    return '#216112'
+                case 'PORTRAITS':
+                    return '#211411'
                 default:
-                    return '#636363'
+                    return '#134570'
             }
         }
     },
@@ -70,9 +74,9 @@ export default defineComponent({
     text-align: center;
     overflow: hidden;
     border-radius: 0.5vh;
-    color: white;
+    color: #fae79d;
     background-color: v-bind(computeColor);
-    border: solid 2px white;
+    border: solid 2px #fae79d;
 }
 img{
     max-height: 5vh;
@@ -83,10 +87,11 @@ img{
 }
 .leftChoice{
     left: 0;
-    background-color: rgb(193, 51, 51);
+    background-color: #216112;
 }
 .rightChoice{
     right: 0;
-    background-color: rgb(179, 125, 39);
+    background-color: #2db1cc;
+    color: #211411;
 }
 </style>

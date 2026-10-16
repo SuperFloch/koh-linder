@@ -1,25 +1,26 @@
 // Quasar SCSS (& Sass) Variables
 // --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// Charte graphique "tiki tropical" : mer, sable, jungle, bois et flammes (voir CLAUDE.md).
 
-// Check documentation for full list of Quasar variables
+// Palette de base
+$sand   : #fae79d; // jaune sable
+$jungle : #216112; // vert jungle
+$sky    : #2db1cc; // bleu clair
+$sea    : #134570; // bleu mer
+$wood   : #211411; // brun
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+// Équipes
+$team-yellow : #ffe030;
+$team-red    : #ff4930;
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+$primary   : $sea;
+$secondary : $jungle;
+$accent    : $sky;
 
-$primary   : #1976D2;
-$secondary : #26A69A;
-$accent    : #9C27B0;
+$dark      : $wood;
+$dark-page : $wood;
 
-$dark      : #1D1D1D;
-$dark-page : #121212;
-
-$positive  : #21BA45;
-$negative  : #C10015;
-$info      : #31CCEC;
-$warning   : #F2C037;
+$positive  : $jungle;
+$negative  : $team-red;
+$info      : $sky;
+$warning   : $team-yellow;

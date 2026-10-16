@@ -21,5 +21,6 @@ export default defineComponent({
   height: 100vh;
   width: 100vw;
   overflow-y: hidden;
+  background-color: var(--wood);
 }
 </style>

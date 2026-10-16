@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "spool_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_BOBINE",
+            "img": "",
+            "text": "« Épreuve de la bobine ! Chaque équipe doit traîner un lourd coffre jusqu'à la ligne d'arrivée. Mais ce coffre est attaché à une bobine... »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:spool_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:spool_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "spool_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_BOBINE",
+            "img": "",
+            "text": "« Un grimpeur par équipe doit escalader la tour, récupérer un bâton au sommet, puis redescendre pour bloquer la bobine adverse ! Tant que votre bobine tourne, le coffre avance. Désignez votre grimpeur ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "SPOOL" }
+            ],
+            "choices": {
+                "left": { "text": "C'est parti !", "next": "ID:spool_03_tour" },
+                "right": { "text": "C'est parti !", "next": "ID:spool_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "spool_03_tour",
+            "name": "La bobine",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_BOBINE",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "SPOOL", "onFinish": "ID:spool_04_dernier" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "spool_04_dernier",
+            "name": "Fin de l'épreuve !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_BOBINE",
+            "img": "",
+            "text": "{winnerHero} fait la différence ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve de la bobine.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "SPOOL" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:spool_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:spool_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "spool_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_BOBINE",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve de la bobine ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "SPOOL" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

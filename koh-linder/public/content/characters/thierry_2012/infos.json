@@ -1,0 +1,40 @@
+{
+  "id": "thierry_2012",
+  "name": "Thierry",
+  "sex": "M",
+  "age": 44,
+  "job": "Magnétiseur",
+  "rarity": "RARE",
+  "unlockCost": 0,
+  "bio": "Magnétiseur de campagne, Thierry jure pouvoir calmer une tempête d'un simple regard. Personne n'a jamais vérifié, mais ses mains solides et sa sérénité à toute épreuve impressionnent. Il médite chaque matin face à l'horizon, même quand l'horizon ne lui a rien demandé.",
+  "attributes": {
+    "STR": 9,
+    "INT": 4,
+    "SWI": 5,
+    "AGI": 6,
+    "OBS": 6,
+    "SOC": 5
+  },
+  "cards": [
+    {
+      "id": "meditation_solitaire",
+      "name": "Méditation solitaire",
+      "mode": "REPLACE",
+      "context": "WAKE",
+      "d20": [
+        12,
+        14,
+        16,
+        20
+      ],
+      "text": "Avant l'aube, {self} s'isole face à la mer pour méditer. Il se relève apaisé, le corps plein d'une énergie nouvelle.",
+      "effects": [
+        {
+          "type": "ENERGY",
+          "target": "{self}",
+          "value": 5
+        }
+      ]
+    }
+  ]
+}

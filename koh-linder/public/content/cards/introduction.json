@@ -1,0 +1,123 @@
+{
+    "cards": [
+        {
+            "single_use": true,
+            "id": "intro_01_bienvenue",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "« Bienvenue dans {region} pour une nouvelle édition de Koh-Lanta ! »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:intro_02_candidats" },
+                "right": { "text": "Suivant", "next": "ID:intro_02_candidats" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "intro_02_candidats",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "« Ils sont 20 nouveaux candidats à tenter l'aventure. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:intro_03_portraits" },
+                "right": { "text": "Suivant", "next": "ID:intro_03_portraits" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "intro_03_portraits",
+            "name": "Les candidats",
+            "type": "PORTRAITS",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "Les visages défilent : voici les 20 aventuriers de cette édition.",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:intro_04_bateau" },
+                "right": { "text": "Suivant", "next": "ID:intro_04_bateau" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "intro_04_bateau",
+            "name": "Sur le bateau",
+            "type": "NARRATION",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "Vous êtes sur le pont du bateau. Autour de vous, vos futurs adversaires se jaugent du regard. C'est le moment de faire connaissance.",
+            "choices": {
+                "left": {
+                    "text": "Rester discret",
+                    "effects": [{ "type": "SET_INTERLOCUTOR", "target": "RANDOM", "value": 0 }],
+                    "next": "ID:intro_05_salut"
+                },
+                "right": {
+                    "text": "Aller vers les autres",
+                    "effects": [{ "type": "SET_INTERLOCUTOR", "target": "RANDOM", "value": 0 }],
+                    "next": "ID:intro_05_salut"
+                }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "intro_05_salut",
+            "name": "{interlocutor}",
+            "type": "DICE",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "{interlocutor} s'approche de vous : « Salut ! Moi, c'est {interlocutor}. On va vivre de sacrées choses ensemble ! »",
+            "dice": {
+                "entity": "{player}",
+                "stat": "SOC",
+                "threshold": 10,
+                "success": "ID:intro_05a_chaleureux",
+                "fail": "ID:intro_05b_vexe"
+            },
+            "choices": {
+                "left": { "text": "Répondre (test de SOC)", "next": "" },
+                "right": { "text": "Répondre (test de SOC)", "next": "" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "intro_05a_chaleureux",
+            "name": "{interlocutor}",
+            "type": "NARRATION",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "Réussite ({lastRoll}). Votre réponse fait mouche : {interlocutor} vous adresse un grand sourire et une poignée de main chaleureuse.",
+            "choices": {
+                "left": { "text": "Suivant", "effects": [{ "type": "RELATION", "gauge": "AFF", "target": "{interlocutor}", "about": "{player}", "value": 2, "historyType": "GOOD_MOMENT", "description": "{player} et {interlocutor} sympathisent dès leur rencontre sur le bateau" }], "next": "ID:intro_06_helico" },
+                "right": { "text": "Suivant", "effects": [{ "type": "RELATION", "gauge": "AFF", "target": "{interlocutor}", "about": "{player}", "value": 2, "historyType": "GOOD_MOMENT", "description": "{player} et {interlocutor} sympathisent dès leur rencontre sur le bateau" }], "next": "ID:intro_06_helico" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "intro_05b_vexe",
+            "name": "{interlocutor}",
+            "type": "NARRATION",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "Échec ({lastRoll}). Votre réponse tombe à plat : {interlocutor} est vexé et vous tourne le dos.",
+            "choices": {
+                "left": { "text": "Suivant", "effects": [{ "type": "RELATION", "gauge": "AFF", "target": "{interlocutor}", "about": "{player}", "value": -2, "historyType": "DISPUTE", "description": "{player} froisse {interlocutor} dès leur rencontre sur le bateau" }], "next": "ID:intro_06_helico" },
+                "right": { "text": "Suivant", "effects": [{ "type": "RELATION", "gauge": "AFF", "target": "{interlocutor}", "about": "{player}", "value": -2, "historyType": "DISPUTE", "description": "{player} froisse {interlocutor} dès leur rencontre sur le bateau" }], "next": "ID:intro_06_helico" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "intro_06_helico",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "INTRODUCTION",
+            "img": "",
+            "text": "Un hélicoptère survole le bateau. « Aventuriers ! Vous devez rejoindre la rive à la nage. Trois, deux, un... Top départ ! »",
+            "choices": {
+                "left": { "text": "Plonger !", "next": "ID:swim_01_saut" },
+                "right": { "text": "Plonger !", "next": "ID:swim_01_saut" }
+            }
+        }
+    ]
+}

@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "pottery_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POTERIES",
+            "img": "",
+            "text": "« Épreuve des poteries ! Au large, sur une plateforme, des poteries sont suspendues. Chacune renferme un collier. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:pottery_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:pottery_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "pottery_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POTERIES",
+            "img": "",
+            "text": "« En relais, nagez jusqu'à la plateforme, sautez maillet en main pour briser une poterie, puis ramenez le collier au départ. Un seul deuxième essai ! La première équipe qui rapporte tous ses colliers l'emporte ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "POTTERY" }
+            ],
+            "choices": {
+                "left": { "text": "À l'eau !", "next": "ID:pottery_03_tour" },
+                "right": { "text": "À l'eau !", "next": "ID:pottery_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "pottery_03_tour",
+            "name": "Les poteries",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_POTERIES",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "POTTERY", "onFinish": "ID:pottery_04_dernier" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "pottery_04_dernier",
+            "name": "Le dernier collier !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POTERIES",
+            "img": "",
+            "text": "{winnerHero} ramène le dernier collier ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "POTTERY" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:pottery_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:pottery_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "pottery_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POTERIES",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve des poteries ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "POTTERY" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

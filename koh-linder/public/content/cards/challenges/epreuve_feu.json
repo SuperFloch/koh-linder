@@ -1,0 +1,105 @@
+{
+    "cards": [
+        {
+            "single_use": true,
+            "id": "fire_01_accueil",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FEU",
+            "img": "",
+            "text": "« L'aventure a déjà commencé pour vous. Vous allez disputer votre première épreuve, tout de suite ! »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:fire_02_parcours" },
+                "right": { "text": "Suivant", "next": "ID:fire_02_parcours" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "fire_02_parcours",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FEU",
+            "img": "",
+            "text": "« Voici l'épreuve : un parcours, des obstacles, et au bout, un feu à allumer avec un silex. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:fire_03_binomes" },
+                "right": { "text": "Suivant", "next": "ID:fire_03_binomes" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "fire_03_binomes",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FEU",
+            "img": "",
+            "text": "« Mais attention : au milieu du parcours, vous piocherez une couleur. Deux hommes ne peuvent pas avoir la même couleur, ni deux femmes : vous formerez un binôme mixte avec la personne qui a la même couleur que vous. Vous ne pourrez compter que sur lui. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:fire_04_depart" },
+                "right": { "text": "Suivant", "next": "ID:fire_04_depart" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "fire_04_depart",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FEU",
+            "img": "",
+            "text": "« Aventuriers, à vos marques... Prêts ? Top départ ! »\n{nextStep}",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "FIRE_COURSE" }
+            ],
+            "choices": {
+                "left": { "text": "Courir !", "next": "ID:fire_05_tour" },
+                "right": { "text": "Courir !", "next": "ID:fire_05_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "fire_05_tour",
+            "name": "Le parcours",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_FEU",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "FIRE_COURSE", "onFinish": "ID:fire_06_resultat" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "fire_06_resultat",
+            "name": "Le feu est allumé !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FEU",
+            "img": "",
+            "text": "{raceLog}\nVotre duo termine en {playerRankLabel} position. {raceWinners} remportent l'épreuve ! {raceLosers} ferment la marche : un vote à leur nom les attend au prochain conseil.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "FIRE_COURSE" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:fire_07_denis" },
+                "right": { "text": "Suivant", "next": "ID:fire_07_denis" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "fire_07_denis",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FEU",
+            "img": "",
+            "text": "« Bravo à {raceWinners}, vainqueurs de cette première épreuve ! Pour les autres, l'aventure ne fait que commencer... »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "FIRE_COURSE" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:team_01_chefs" },
+                "right": { "text": "Suivant", "next": "ID:team_01_chefs" }
+            }
+        }
+    ]
+}

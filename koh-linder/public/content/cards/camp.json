@@ -1,0 +1,93 @@
+{
+    "cards": [
+        {
+            "single_use": true,
+            "id": "camp_01_decouverte",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "CAMP",
+            "img": "",
+            "text": "« Partez à la découverte de votre campement ! »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:camp_02_pirogue" },
+                "right": { "text": "Suivant", "next": "ID:camp_02_pirogue" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "camp_02_pirogue",
+            "name": "En pirogue",
+            "type": "NARRATION",
+            "theme": "CAMP",
+            "img": "",
+            "text": "Chaque équipe est emmenée en pirogue vers une île déserte différente. Les {playerTeamLabel} pagaient vers la leur, à l'abri du soleil déclinant.",
+            "choices": {
+                "left": { "text": "Débarquer", "next": "ID:camp_03_banniere" },
+                "right": { "text": "Débarquer", "next": "ID:camp_03_banniere" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "camp_03_banniere",
+            "name": "L'île des {playerTeamName}",
+            "type": "NARRATION",
+            "theme": "CAMP",
+            "img": "",
+            "text": "{bannerA} et {bannerB} accrochent la bannière pendant que {welcomer} s'écrie : « Bienvenue sur l'île des {playerTeamName} ! »",
+            "on_enter": [
+                { "type": "PICK_TEAMMATES", "target": "PLAYER_TEAM", "value": 3, "vars": ["bannerA", "bannerB", "welcomer"], "excludePlayer": true },
+                { "type": "RELATION", "gauge": "REP", "target": "TEAM", "about": "{bannerA}", "value": 1 },
+                { "type": "RELATION", "gauge": "REP", "target": "TEAM", "about": "{bannerB}", "value": 1 },
+                { "type": "RELATION", "gauge": "AFF", "target": "TEAM", "about": "{welcomer}", "value": 1 },
+                { "type": "TEAM_RELATION", "target": "PLAYER_TEAM", "gauge": "AFF", "value": 2, "historyType": "GOOD_MOMENT", "description": "Les {team} découvrent ensemble leur île et y plantent leur bannière" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:camp_04_sacs" },
+                "right": { "text": "Suivant", "next": "ID:camp_04_sacs" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "camp_04_sacs",
+            "name": "Le campement",
+            "type": "NARRATION",
+            "theme": "CAMP",
+            "img": "",
+            "text": "Chacun dépose son sac au pied d'un arbre. Pas de réserve d'eau, de bois ni de nourriture : tout est à faire. Il reste l'après-midi pour s'organiser.",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "CAMP_LIFE", "params": { "startPeriod": "AFTERNOON" } }
+            ],
+            "choices": {
+                "left": { "text": "Au travail !", "next": "ID:camp_05_action" },
+                "right": { "text": "Au travail !", "next": "ID:camp_05_action" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "camp_05_action",
+            "name": "Vie de camp",
+            "type": "CHALLENGE_TURN",
+            "theme": "CAMP",
+            "img": "",
+            "text": "{campPrompt}",
+            "challenge": { "id": "CAMP_LIFE", "onFinish": "ID:camp_06_fin" },
+            "choices": {
+                "left": { "text": "{campLeft}", "next": "" },
+                "right": { "text": "{campRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "camp_06_fin",
+            "name": "La première nuit",
+            "type": "NARRATION",
+            "theme": "CAMP",
+            "img": "",
+            "text": "Le camp s'endort sous les étoiles. Demain, un nouveau jour se lève sur l'île des {playerTeamName}... (à suivre)",
+            "choices": {
+                "left": { "text": "Fin", "next": "END" },
+                "right": { "text": "Fin", "next": "END" }
+            }
+        }
+    ]
+}

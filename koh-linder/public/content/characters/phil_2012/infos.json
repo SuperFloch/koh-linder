@@ -1,0 +1,19 @@
+{
+  "id": "phil_2012",
+  "name": "Phil",
+  "sex": "M",
+  "age": 41,
+  "job": "Ouvrier",
+  "rarity": "MYTHIC",
+  "unlockCost": 25,
+  "bio": "Ouvrier depuis vingt ans, Phil a l'habitude des journées longues et des mains abîmées. Excellent nageur, solide dans l'effort, il n'ouvre pas la bouche pour rien. Quand il dit qu'il va le faire, c'est déjà fait.",
+  "attributes": {
+    "STR": 7,
+    "INT": 5,
+    "SWI": 9,
+    "AGI": 8,
+    "OBS": 5,
+    "SOC": 6
+  },
+  "cards": []
+}

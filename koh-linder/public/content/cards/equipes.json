@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": true,
+            "id": "team_01_chefs",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "FORMATION_EQUIPES",
+            "img": "",
+            "text": "« {raceWinners}, votre duo se sépare ici : vous êtes désormais chefs d'équipe ! {chiefRed} dirigera les Rouges, et {chiefYellow} les Jaunes. »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "TEAM_DRAFT", "params": { "source": "FIRE_COURSE" } }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:team_02_regle" },
+                "right": { "text": "Suivant", "next": "ID:team_02_regle" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "team_02_regle",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "FORMATION_EQUIPES",
+            "img": "",
+            "text": "« À tour de rôle, chaque chef choisit un aventurier pour son équipe, en alternant hommes et femmes pour des équipes équilibrées. {firstChief}, vous commencez ! »",
+            "choices": {
+                "left": { "text": "Suivant", "effects": [{ "type": "CHALLENGE_UPDATE", "target": "TEAM_DRAFT" }], "next": "ID:team_03_choix" },
+                "right": { "text": "Suivant", "effects": [{ "type": "CHALLENGE_UPDATE", "target": "TEAM_DRAFT" }], "next": "ID:team_03_choix" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "team_03_choix",
+            "name": "Le choix des équipes",
+            "type": "CHALLENGE_TURN",
+            "theme": "FORMATION_EQUIPES",
+            "img": "",
+            "text": "{draftLog}\n{draftPrompt}",
+            "challenge": { "id": "TEAM_DRAFT", "onFinish": "ID:team_04_banniere_rouge" },
+            "choices": {
+                "left": { "text": "{draftAction}", "next": "" },
+                "right": { "text": "{draftAction}", "next": "" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "team_04_banniere_rouge",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "FORMATION_EQUIPES",
+            "img": "",
+            "text": "{draftLog}\nDenis remet à {chiefRed} la bannière rouge : « Les Rouges, vous êtes l'équipe des {teamRedName} ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "TEAM_DRAFT" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:team_05_banniere_jaune" },
+                "right": { "text": "Suivant", "next": "ID:team_05_banniere_jaune" }
+            }
+        },
+        {
+            "single_use": true,
+            "id": "team_05_banniere_jaune",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "FORMATION_EQUIPES",
+            "img": "",
+            "text": "Denis remet à {chiefYellow} la bannière jaune : « Les Jaunes, vous êtes l'équipe des {teamYellowName} ! »\n{playerTeamText}",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "TEAM_DRAFT" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:camp_01_decouverte" },
+                "right": { "text": "Suivant", "next": "ID:camp_01_decouverte" }
+            }
+        }
+    ]
+}

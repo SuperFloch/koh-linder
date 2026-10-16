@@ -1,0 +1,7 @@
+{
+    "candidateCount": 20,
+    "reserveCharacterCount": 1,
+    "age": { "min": 18, "max": 60, "youngBelow": 30, "minYoung": 2, "oldAbove": 45, "minOld": 4 },
+    "attributes": { "min": 1, "max": 8 },
+    "creator": { "points": 24, "base": 4, "min": 1, "max": 10 }
+}

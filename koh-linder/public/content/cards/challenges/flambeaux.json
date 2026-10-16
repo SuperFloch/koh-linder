@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "torch_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FLAMBEAUX",
+            "img": "",
+            "text": "« Épreuve des flambeaux ! Chaque équipe doit porter une lourde caisse de combustible à travers une série d'obstacles jusqu'à une torche, pour allumer son flambeau. Il faudra ensuite refaire tout le parcours en sens inverse, jusqu'au mât. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:torch_02_mat" },
+                "right": { "text": "Suivant", "next": "ID:torch_02_mat" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "torch_02_mat",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FLAMBEAUX",
+            "img": "",
+            "text": "« Au sommet du mât, une vasque pleine de pétrole. La corde du grappin est trop courte : toute l'équipe devra soulever un grimpeur adroit pour qu'il l'accroche, monte, et embrase la vasque avec la flamme de votre flambeau. La première équipe à y parvenir l'emporte ! Prêts ? Top départ ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "TORCHES" }
+            ],
+            "choices": {
+                "left": { "text": "En route !", "next": "ID:torch_03_tour" },
+                "right": { "text": "En route !", "next": "ID:torch_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "torch_03_tour",
+            "name": "Les flambeaux",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_FLAMBEAUX",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "TORCHES", "onFinish": "ID:torch_04_vasque" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "torch_04_vasque",
+            "name": "La vasque s'embrase !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FLAMBEAUX",
+            "img": "",
+            "text": "{winnerHero} grimpe en haut du mât et embrase la vasque. Une flamme brûle fièrement pour l'équipe des {winnerTeamName} !",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "TORCHES" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:torch_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:torch_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "torch_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_FLAMBEAUX",
+            "img": "",
+            "text": "« Les {winnerTeamLabel} remportent l'épreuve des flambeaux ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "TORCHES" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "elastic_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_ELASTIQUES",
+            "img": "",
+            "text": "« Épreuve des élastiques ! Tous les membres de chaque équipe sont attachés au même pieu par un élastique. Il faudra ramasser des bâtons gravés de plus en plus loin, et les rapporter un à un au départ. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:elastic_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:elastic_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "elastic_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_ELASTIQUES",
+            "img": "",
+            "text": "« Plus vous irez loin, plus l'élastique sera tendu ! Le dernier objet est un poignard : la première équipe qui a rapporté sept bâtons puis atteint le poignard l'emporte. Attention aux chutes ! Top départ ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "ELASTICS" }
+            ],
+            "choices": {
+                "left": { "text": "Tirer !", "next": "ID:elastic_03_tour" },
+                "right": { "text": "Tirer !", "next": "ID:elastic_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "elastic_03_tour",
+            "name": "Les élastiques",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_ELASTIQUES",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "ELASTICS", "onFinish": "ID:elastic_04_poignard" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "elastic_04_poignard",
+            "name": "Le poignard !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_ELASTIQUES",
+            "img": "",
+            "text": "{winnerHero} attrape le poignard pour son équipe ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "ELASTICS" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:elastic_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:elastic_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "elastic_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_ELASTIQUES",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve des élastiques ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "ELASTICS" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

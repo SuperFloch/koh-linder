@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "weights_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POIDS",
+            "img": "",
+            "text": "« Épreuve des poids immergés ! Chaque équipe a quatre poids coulés au fond de l'eau, à des distances de plus en plus grandes du départ. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:weights_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:weights_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "weights_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POIDS",
+            "img": "",
+            "text": "« En relais, vous irez tour à tour tenter de les ramener au départ, en apnée. Personne ne passe deux fois de suite, et chacun doit passer au moins une fois. La première équipe qui ramène ses quatre poids l'emporte ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "SUNKEN_WEIGHTS" }
+            ],
+            "choices": {
+                "left": { "text": "À l'eau !", "next": "ID:weights_03_tour" },
+                "right": { "text": "À l'eau !", "next": "ID:weights_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "weights_03_tour",
+            "name": "Les poids immergés",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_POIDS",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "SUNKEN_WEIGHTS", "onFinish": "ID:weights_04_dernier" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "weights_04_dernier",
+            "name": "Le dernier poids !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POIDS",
+            "img": "",
+            "text": "{winnerHero} ramène le dernier poids ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "SUNKEN_WEIGHTS" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:weights_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:weights_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "weights_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_POIDS",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve des poids immergés ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "SUNKEN_WEIGHTS" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

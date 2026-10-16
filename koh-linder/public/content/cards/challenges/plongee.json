@@ -1,0 +1,79 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "dive_01_intro",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEE",
+            "img": "",
+            "text": "« Épreuve de la plongée ! Dix colliers sont accrochés le long d'une corde qui plonge au plus profond de la mer. »",
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:dive_02_regles" },
+                "right": { "text": "Suivant", "next": "ID:dive_02_regles" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "dive_02_regles",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEE",
+            "img": "",
+            "text": "« C'est un relais : chaque équipe envoie un plongeur après l'autre chercher un collier, et personne ne plonge deux fois de suite. Chacun doit passer au moins une fois. Les colliers les plus profonds sont les plus difficiles à atteindre. La première équipe qui rapporte les dix colliers l'emporte ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_START", "target": "DIVE_RELAY" }
+            ],
+            "choices": {
+                "left": { "text": "À l'eau !", "next": "ID:dive_03_tour" },
+                "right": { "text": "À l'eau !", "next": "ID:dive_03_tour" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "dive_03_tour",
+            "name": "La plongée",
+            "type": "CHALLENGE_TURN",
+            "theme": "EPREUVE_PLONGEE",
+            "img": "",
+            "text": "{raceLog}\n{nextStep}",
+            "challenge": { "id": "DIVE_RELAY", "onFinish": "ID:dive_04_colliers" },
+            "choices": {
+                "left": { "text": "{stepActionLeft}", "next": "" },
+                "right": { "text": "{stepActionRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "dive_04_colliers",
+            "name": "Dernier collier !",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEE",
+            "img": "",
+            "text": "{winnerHero} ramène le dernier collier ! Les {winnerTeamLabel}, l'équipe des {winnerTeamName}, remportent l'épreuve.",
+            "on_enter": [
+                { "type": "CHALLENGE_END", "target": "DIVE_RELAY" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "ID:dive_05_fin" },
+                "right": { "text": "Suivant", "next": "ID:dive_05_fin" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "dive_05_fin",
+            "name": "Denis Brognard",
+            "type": "NARRATION",
+            "theme": "EPREUVE_PLONGEE",
+            "img": "",
+            "text": "« Victoire des {winnerTeamLabel} à l'épreuve de la plongée ! »",
+            "on_enter": [
+                { "type": "CHALLENGE_CLOSE", "target": "DIVE_RELAY" }
+            ],
+            "choices": {
+                "left": { "text": "Suivant", "next": "RETURN" },
+                "right": { "text": "Suivant", "next": "RETURN" }
+            }
+        }
+    ]
+}

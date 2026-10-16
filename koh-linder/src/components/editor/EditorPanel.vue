@@ -30,7 +30,7 @@
         <div>
             <div>Choix :</div>
             <div class="row">
-                <div class="col-6 bg-warning">
+                <div class="col-6 bg-secondary text-white">
                     <EditorChoice v-model="cardModel.choices.left" @change="onChange" :all-cards="allCards" ref="choiceLeft" />
                 </div>
                 <div class="col-6 bg-info">
@@ -91,7 +91,7 @@ export default defineComponent({
 </script>
 <style scoped>
 .modalBody {
-    color: white;
-    background-color: rgb(223, 223, 136);
+    color: #211411;
+    background-color: #fae79d;
 }
 </style>
