@@ -33,7 +33,7 @@
             "type": "NARRATION",
             "theme": "EPREUVE_FEU",
             "img": "",
-            "text": "« Mais attention : au milieu du parcours, vous piocherez une couleur. Deux hommes ne peuvent pas avoir la même couleur, ni deux femmes : vous formerez un binôme mixte avec la personne qui a la même couleur que vous. Vous ne pourrez compter que sur lui. »",
+            "text": "« Mais attention : au milieu du parcours, vous piocherez une couleur. Deux hommes ne peuvent pas avoir la même couleur, ni deux femmes : vous formerez un binôme mixte avec la personne qui a la même couleur que vous. Vous ne pourrez compter que sur {partnerLui}. »",
             "choices": {
                 "left": { "text": "Suivant", "next": "ID:fire_04_depart" },
                 "right": { "text": "Suivant", "next": "ID:fire_04_depart" }

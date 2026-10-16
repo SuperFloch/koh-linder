@@ -1,3 +1,4 @@
+import { mark } from "../Personalize";
 import { shuffle } from "../CandidateGenerator";
 import { EffectType } from "../Effect";
 import { RelationGauge } from "../Character";
@@ -35,6 +36,7 @@ class SwimRace extends RaceChallenge {
     constructor(params) {
         const merged = { ...DEFAULT_PARAMS, ...(params || {}) };
         super(SwimRace.ID, merged, merged.length);
+        this.swimming = true; // la minimap a des cases bleues (contexte de natation)
         this.rankingApplied = false;
     }
 
@@ -136,7 +138,7 @@ class SwimRace extends RaceChallenge {
                 }
                 const withWho = companion ? companion.name : "les autres";
                 log = "Vous nagez avec " + withWho + " (" + this.rollToString("SOC", roll, this.params.groupThreshold) + ") : "
-                    + (ok ? "la complicité est là, vous avancez d'une case." : withWho + " doit vous aider, vous avancez d'une case mais perdez en estime.");
+                    + (ok ? "la complicité est là, vous avancez d'une case." : withWho + " doit aider " + mark(c.name) + ", qui avance d'une case mais perd en estime.");
             }
             if (c.isPlayer) {
                 playerLog = log;

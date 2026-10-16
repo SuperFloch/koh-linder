@@ -11,11 +11,11 @@
             </div>
         </div>
         <div class="cabin">
-            <span class="label">Cabane</span>
-            <div class="steps" role="img" :aria-label="'Cabane ' + camp.equipements.cabin + ' sur ' + cabinSteps">
-                <span v-for="n in cabinSteps" :key="n" class="step" :class="{ done: n <= camp.equipements.cabin }"></span>
+            <span class="label">{{ project.name }}</span>
+            <div class="steps" role="img" :aria-label="project.name + ' ' + project.done + ' sur ' + project.steps">
+                <span v-for="n in project.steps" :key="n" class="step" :class="{ done: n <= project.done }"></span>
             </div>
-            <span class="label">{{ camp.equipements.cabin }}/{{ cabinSteps }}</span>
+            <span class="label">{{ project.done }}/{{ project.steps }}</span>
         </div>
         <div class="periods">
             <span v-for="p in periods" :key="p.key" class="period" :class="{ current: p.current, past: p.past }">{{ p.label }}</span>
@@ -25,7 +25,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { Game } from 'src/model/Game';
-import { CAMP_RESOURCE_MAX, CAMP_CABIN_STEPS } from 'src/model/Team';
+import { CAMP_RESOURCE_MAX, CAMP_PROJECTS } from 'src/model/Team';
 import { PERIOD_ORDER, PERIOD_LABELS } from 'src/model/Time';
 
 /**
@@ -44,8 +44,12 @@ export default defineComponent({
         waterMax() {
             return CAMP_RESOURCE_MAX.water;
         },
-        cabinSteps() {
-            return CAMP_CABIN_STEPS;
+        // Projet de construction en cours (la cabane tant qu'elle n'est pas finie), sinon la cabane terminée
+        project() {
+            const camp = this.camp;
+            const id = !camp.cabinDone ? 'CABIN' : (camp.extraProject && !camp.projectDone(camp.extraProject) ? camp.extraProject : null);
+            const def = CAMP_PROJECTS[id || 'CABIN'];
+            return { name: def.name, steps: def.steps, done: camp.projectSteps(id || 'CABIN') };
         },
         periods() {
             const idx = PERIOD_ORDER.indexOf(this.game.period);

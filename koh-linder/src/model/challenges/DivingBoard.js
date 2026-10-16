@@ -1,3 +1,4 @@
+import { accord } from "../Personalize";
 import { shuffle } from "../CandidateGenerator";
 import { TeamRace } from "./TeamRace";
 
@@ -113,7 +114,7 @@ class DivingBoard extends TeamRace {
             text = "Minute " + this.minutes(this.tests) + " : vous êtes suspendu, en équilibre. Vos coéquipiers tirent sur la corde. Prochain jet joint de STR : " + this.threshold(this.pullers(color).length) + ".";
             left = right = "Garder l'équilibre";
         } else {
-            text = "Minute " + this.minutes(this.tests) + " : " + this.hanging[color].name + " est suspendu. Prochain jet joint de STR de toute l'équipe : " + this.threshold(this.pullers(color).length) + ".";
+            text = "Minute " + this.minutes(this.tests) + " : " + this.hanging[color].name + " est " + accord(this.hanging[color], "suspendu") + ". Prochain jet joint de STR de toute l'équipe : " + this.threshold(this.pullers(color).length) + ".";
             left = right = "Tirer sur la corde";
         }
         game.vars.nextStep = text;

@@ -130,6 +130,7 @@
         "firstnames_female",
         "jobs",
         "team_names",
-        "hot_meals"
+        "hot_meals",
+        "camp_projects"
     ]
 }

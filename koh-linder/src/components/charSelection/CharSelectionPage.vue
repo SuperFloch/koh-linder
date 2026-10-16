@@ -28,7 +28,7 @@
                 <div class="points">Points répartis : {{ creatorTotal }} / {{ creatorRules.points }}</div>
                 <div class="creatorAttributes">
                     <div v-for="(value, attr) in creator.attributes" :key="attr" class="attribute">
-                        <span class="attrName">{{ attr }}</span>
+                        <span class="attrName statIcon" :title="attr">{{ icon(attr) }}</span>
                         <button class="tiki-btn small step" :disabled="!canAdjust(attr, -1)" @click="adjust(attr, -1)" aria-label="Diminuer">&minus;</button>
                         <span class="attrValue">{{ value }}</span>
                         <button class="tiki-btn small step" :disabled="!canAdjust(attr, 1)" @click="adjust(attr, 1)" aria-label="Augmenter">+</button>
@@ -44,7 +44,7 @@
                 <div class="infos">{{ selected.job }}, {{ selected.age }} ans</div>
                 <div class="attributes">
                     <div v-for="(value, attr) in selected.attributes" :key="attr" class="attribute">
-                        <span class="attrName">{{ attr }}</span>
+                        <span class="attrName statIcon" :title="attr">{{ icon(attr) }}</span>
                         <span class="attrBar"><span class="attrFill" :style="{ width: Math.min(value, 10) * 10 + '%' }"></span></span>
                         <span class="attrValue">{{ value }}</span>
                     </div>
@@ -61,7 +61,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { Character, RarityLabel } from 'src/model/Character';
+import { Character, RarityLabel, STAT_ICONS } from 'src/model/Character';
 import { randomFirstName, randomJobEntry, randomAge, pick } from 'src/model/CandidateGenerator';
 import { isUnlocked } from 'src/content/ProfileStore';
 
@@ -123,6 +123,10 @@ export default defineComponent({
   methods: {
     rarityLabel(rarity){
         return RarityLabel[rarity];
+    },
+    // Symbole d'une stat (bras, cerveau, nageur, danseuse, yeux, sourire)
+    icon(attr){
+        return STAT_ICONS[attr];
     },
     setSex(sex){
         if(this.creator.sex != sex){
@@ -232,9 +236,8 @@ export default defineComponent({
     line-height: 1.3;
 }
 .creatorAttributes {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 14px;
+    display: flex;
+    flex-direction: column;
 }
 .creatorAttributes .attribute {
     margin: 2px 0;
@@ -242,7 +245,12 @@ export default defineComponent({
 }
 .creatorAttributes .attrName {
     width: 2.6em;
-    font-size: 0.85rem;
+    font-size: 1.2rem;
+    text-align: center;
+}
+.statIcon {
+    font-size: 1.2rem;
+    text-align: center;
 }
 .creatorAttributes .attrValue {
     flex: 1;

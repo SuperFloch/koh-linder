@@ -1,3 +1,4 @@
+import { il } from "../Personalize";
 import { EffectType } from "../Effect";
 import { RelationGauge } from "../Character";
 import { RelayRace } from "./RelayRace";
@@ -40,6 +41,7 @@ class PotteryRelay extends RelayRace {
     constructor(params) {
         const merged = { ...DEFAULT_PARAMS, ...(params || {}) };
         super(PotteryRelay.ID, merged, merged.swimCells);
+        this.swimming = true; // la minimap a des cases bleues (contexte de natation)
         // couleur -> { phase: "READY" | "PLATFORM", diver, pots: seuils restants (croissants), attempts, collars }
         this.state = {};
     }
@@ -122,7 +124,7 @@ class PotteryRelay extends RelayRace {
                 this.finishRace(game, color, diver, diver.name + " ramène le dernier collier", "l'épreuve des poteries");
                 return name + " saute et brise " + kind + " " + detail + " : le dernier collier est ramené au départ !";
             }
-            return name + " saute et brise " + kind + " " + detail + " ! Il ramène le collier à la nage (" + tests + " test" + (tests > 1 ? "s" : "") + ") et passe le relais (" + st.collars + "/" + p.pots + ")." + tag;
+            return name + " saute et brise " + kind + " " + detail + " ! " + il(diver, true) + " ramène le collier à la nage (" + tests + " test" + (tests > 1 ? "s" : "") + ") et passe le relais (" + st.collars + "/" + p.pots + ")." + tag;
         }
         if (st.attempts < p.attempts) {
             return name + " saute sur " + kind + " poterie " + detail + " : elle résiste ! Un deuxième essai est permis." + tag;
@@ -133,7 +135,7 @@ class PotteryRelay extends RelayRace {
         st.diver = null;
         this.positions[color] = 0;
         game.applyEffect({ type: EffectType.RELATION, gauge: RelationGauge.REP, target: "TEAM", about: diver.name, value: -p.failRep });
-        return name + " rate encore " + detail + " : il rentre à la nage sans collier (" + tests + " test" + (tests > 1 ? "s" : "") + ") et passe le relais." + tag;
+        return name + " rate encore " + detail + " : " + il(diver) + " rentre à la nage sans collier (" + tests + " test" + (tests > 1 ? "s" : "") + ") et passe le relais." + tag;
     }
 
     refresh(game) {

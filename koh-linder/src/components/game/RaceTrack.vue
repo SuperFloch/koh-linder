@@ -21,7 +21,7 @@
                     :style="{ bottom: 'calc(' + (it.value / gauge.size * 100) + '% - 6px)', backgroundColor: it.bg, left: (i * 9 + 1) + 'px' }"></span>
             </div>
         </div>
-        <div class="track">
+        <div class="track" :class="{ swim: challenge.swimming }">
             <div v-for="cell in cells" :key="cell.index" class="cell" :class="{ shore: cell.index == challenge.length }">
                 <div class="cellLabel">{{ cell.label }}</div>
                 <div class="avatars">
@@ -180,7 +180,7 @@ export default defineComponent({
     padding: 3px;
     border: 3px solid var(--wood-dark);
     border-radius: 6px;
-    background-color: var(--sand-soft);
+    background-color: var(--sky); /* puzzle aquatique : fond bleu */
     text-align: center;
 }
 .gridBox.mine {
@@ -194,12 +194,12 @@ export default defineComponent({
 .gridCell {
     width: 12px;
     height: 12px;
-    background-color: #dcc684;
+    background-color: #1c7f96; /* case vide : bleu plus profond */
 }
 .gridCount {
     font-size: 0.65rem;
     font-weight: 700;
-    color: var(--wood-dark);
+    color: var(--sea);
 }
 /* Piste : cases de sable sur la planche, l'arrivée en ambre */
 .track {
@@ -217,6 +217,13 @@ export default defineComponent({
     background-color: var(--sand-soft);
     text-align: center;
     overflow: hidden;
+}
+/* Épreuve de natation : cases bleues (sauf l'arrivée) */
+.track.swim .cell:not(:last-child) {
+    background-color: var(--sky);
+}
+.track.swim .cellLabel {
+    color: var(--sea);
 }
 .cell:last-child {
     flex: 1.4;

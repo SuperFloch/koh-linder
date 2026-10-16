@@ -1,0 +1,21 @@
+{
+    "values": [
+        { "id": "CABIN", "name": "Cabane", "steps": 15, "difficulty": 8, "wood": 2, "bonusText": "meilleur sommeil", "bonus": {} },
+        { "id": "TABLE", "name": "Table", "steps": 6, "difficulty": 10, "wood": 2, "bonusText": "+2 énergie à chaque repas",
+            "bonus": { "MEAL": { "energy": 2 } } },
+        { "id": "MATTRESS", "name": "Paillasse", "steps": 8, "difficulty": 11, "wood": 2, "bonusText": "+3 énergie chaque nuit",
+            "bonus": { "NIGHT": { "energy": 3 } } },
+        { "id": "TRAP", "name": "Piège à animaux", "steps": 10, "difficulty": 13, "wood": 1, "bonusText": "+2 nourriture à la cueillette et à la pêche",
+            "bonus": { "PLANTS": { "food": 2 }, "FISH": { "food": 2 }, "HARPOON": { "food": 2 } } },
+        { "id": "BASKET", "name": "Panier", "steps": 5, "difficulty": 9, "wood": 1, "bonusText": "+3 nourriture à la cueillette, +3 bois ramenés",
+            "bonus": { "PLANTS": { "food": 3 }, "WOOD": { "wood": 3 } } },
+        { "id": "DRYING_RACK", "name": "Séchoir à poisson", "steps": 7, "difficulty": 12, "wood": 2, "bonusText": "+3 nourriture à la pêche",
+            "bonus": { "FISH": { "food": 3 }, "HARPOON": { "food": 3 } } },
+        { "id": "WATER_TANK", "name": "Réservoir d'eau", "steps": 6, "difficulty": 10, "wood": 2, "bonusText": "+5 eau ramenée",
+            "bonus": { "WATER": { "water": 5 } } },
+        { "id": "FIRE_PIT", "name": "Foyer en pierres", "steps": 8, "difficulty": 12, "wood": 1, "bonusText": "le feu consomme 1 bois de moins par période",
+            "bonus": { "FIRE": { "burn": -1 } } },
+        { "id": "HAMMOCK", "name": "Hamac", "steps": 7, "difficulty": 11, "wood": 2, "bonusText": "+2 énergie au repos, +1 à la baignade",
+            "bonus": { "PAUSE": { "energy": 2 }, "SWIM": { "energy": 1 } } }
+    ]
+}

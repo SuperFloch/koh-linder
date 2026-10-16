@@ -1,4 +1,5 @@
 import { RelationGauge, RollContext, CardMode } from "../Character";
+import { mark } from "../Personalize";
 
 /**
  * Étapes (cases) réutilisables par les épreuves de course. Chaque épreuve les assemble dans son parcours (`steps`) et peut
@@ -72,6 +73,8 @@ class Challenge {
         this.id = id;
         this.params = { ...STEP_PARAMS, ...(params || {}) };
         this.visible = false;
+        // true : épreuve de natation (la minimap affiche des cases bleues)
+        this.swimming = false;
         // Clé du composant d'affichage du score (voir InGamePage), "" = aucun
         this.display = "";
         // Candidats engagés dans l'épreuve
@@ -304,6 +307,8 @@ class Challenge {
         const p = this.params;
         const mode = this.chooseMode(step, members, side);
         const names = members.map((m) => m.name);
+        // Le duo, pour les comptes rendus au pluriel : « Laurent et Camille » (prénom du joueur surligné)
+        const duo = members.map((m) => (m.isPlayer ? mark(m.name) : m.name)).join(" et ");
         const loseRepBetween = (value) => {
             members.forEach((a) => members.filter((b) => b.name != a.name).forEach((b) => a.changeRelation(b.name, RelationGauge.REP, -value)));
         };
@@ -326,7 +331,7 @@ class Challenge {
             } else {
                 loseRepBetween(p.ladderFailRep);
             }
-            logIf(names, "Courte échelle " + outcome.text + " : " + role + (outcome.ok ? ", et vous franchissez l'obstacle ensemble !" : ", mais ça vacille : vous retombez et vous vous reprochez le raté."));
+            logIf(names, "Courte échelle " + outcome.text + " : " + role + (outcome.ok ? ", et " + duo + " franchissent l'obstacle ensemble !" : ", mais ça vacille : " + duo + " retombent et se reprochent le raté."));
             return;
         }
 
@@ -336,14 +341,14 @@ class Challenge {
             members.forEach((m) => m.changeEnergy(-p.sprintExtraEnergy));
             const gain = outcome.ok ? Math.min(2, this.segmentRemaining(members[0])) : 1;
             members.forEach((m) => this.advance(m, gain));
-            logIf(names, "Sprint en duo " + outcome.text + " : " + (outcome.ok ? "vous bondissez ensemble de " + gain + (gain > 1 ? " cases !" : " case.") : "le sprint tourne court, une case seulement."));
+            logIf(names, "Sprint en duo " + outcome.text + " : " + (outcome.ok ? duo + " bondissent ensemble de " + gain + (gain > 1 ? " cases !" : " case.") : "le sprint tourne court, une case seulement."));
         } else if (outcome.ok) {
             members.forEach((m) => this.advance(m, 1));
-            logIf(names, "Course en duo modérée " + outcome.text + " : vous avancez ensemble d'une case.");
+            logIf(names, "Course en duo modérée " + outcome.text + " : " + duo + " avancent ensemble d'une case.");
         } else {
             // Un échec en course modérée froisse les binômes
             loseRepBetween(p.moderateFailRep);
-            logIf(names, "Course en duo modérée " + outcome.text + " : raté, vous ne progressez pas et vous vous reprochez le faux pas.");
+            logIf(names, "Course en duo modérée " + outcome.text + " : raté, " + duo + " ne progressent pas et se reprochent le faux pas.");
         }
     }
     /**
@@ -375,7 +380,7 @@ class Challenge {
                 return {
                     left: "Monter sur ses épaules (jet d'AGI)",
                     right: "Porter (jet de STR)",
-                    text: "la courte échelle avec " + partnerName + " : jet joint, celui qui monte lance l'AGI et celui qui porte la STR. Un échec vous fait perdre l'estime l'un de l'autre."
+                    text: "la courte échelle avec " + partnerName + " : jet joint, celui qui monte lance l'AGI et celui qui porte la STR. Un échec fait perdre l'estime aux deux binômes."
                 };
             default:
                 return null;

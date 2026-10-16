@@ -31,7 +31,7 @@
                 <div class="bio" v-if="selected.bio">{{ selected.bio }}</div>
                 <div class="attributes">
                     <div v-for="(value, attr) in selected.attributes" :key="attr" class="attribute">
-                        <span class="attrName">{{ attr }}</span>
+                        <span class="attrName statIcon" :title="attr">{{ icon(attr) }}</span>
                         <span class="attrBar"><span class="attrFill" :style="{ width: Math.min(value, 10) * 10 + '%' }"></span></span>
                         <span class="attrValue">{{ value }}</span>
                     </div>
@@ -43,7 +43,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { RarityLabel } from 'src/model/Character';
+import { RarityLabel, STAT_ICONS } from 'src/model/Character';
 import { isUnlocked } from 'src/content/ProfileStore';
 
 /**
@@ -72,6 +72,10 @@ export default defineComponent({
     },
     rarityLabel(rarity){
         return RarityLabel[rarity];
+    },
+    // Symbole d'une stat (bras, cerveau, nageur, danseuse, yeux, sourire)
+    icon(attr){
+        return STAT_ICONS[attr];
     },
     rarityKey(character){
         return (character.rarity || '').toLowerCase();
@@ -212,6 +216,10 @@ export default defineComponent({
     margin: 3px 0;
     font-weight: 700;
     font-size: 0.9rem;
+}
+.statIcon {
+    font-size: 1.2rem;
+    text-align: center;
 }
 .attrName {
     width: 3em;

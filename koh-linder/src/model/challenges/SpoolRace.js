@@ -1,3 +1,4 @@
+import { accord } from "../Personalize";
 import { shuffle } from "../CandidateGenerator";
 import { EffectType } from "../Effect";
 import { RelationGauge } from "../Character";
@@ -116,7 +117,7 @@ class SpoolRace extends TeamRace {
             // Premier tour : désignation du grimpeur
             const player = this.members[color].find((m) => m.isPlayer);
             st.climber = (mine && player && side == "left") ? player : this.best(color, "AGI");
-            return (st.climber.isPlayer ? "Vous vous désignez" : st.climber.name + " est désigné") + " pour grimper." + (mine ? "" : " (" + who + ")");
+            return (st.climber.isPlayer ? "Vous vous désignez" : st.climber.name + " est " + accord(st.climber, "désigné")) + " pour grimper." + (mine ? "" : " (" + who + ")");
         }
         const logs = [];
         // Le grimpeur monte ou descend d'un étage

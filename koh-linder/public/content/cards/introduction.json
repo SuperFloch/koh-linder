@@ -100,7 +100,7 @@
             "type": "NARRATION",
             "theme": "INTRODUCTION",
             "img": "",
-            "text": "Échec ({lastRoll}). Votre réponse tombe à plat : {interlocutor} est vexé et vous tourne le dos.",
+            "text": "Échec ({lastRoll}). Votre réponse tombe à plat : {interlocutor} est vexé{interlocutorE} et vous tourne le dos.",
             "choices": {
                 "left": { "text": "Suivant", "effects": [{ "type": "RELATION", "gauge": "AFF", "target": "{interlocutor}", "about": "{player}", "value": -2, "historyType": "DISPUTE", "description": "{player} froisse {interlocutor} dès leur rencontre sur le bateau" }], "next": "ID:intro_06_helico" },
                 "right": { "text": "Suivant", "effects": [{ "type": "RELATION", "gauge": "AFF", "target": "{interlocutor}", "about": "{player}", "value": -2, "historyType": "DISPUTE", "description": "{player} froisse {interlocutor} dès leur rencontre sur le bateau" }], "next": "ID:intro_06_helico" }

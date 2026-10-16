@@ -1,3 +1,4 @@
+import { il } from "../Personalize";
 import { EffectType } from "../Effect";
 import { RelationGauge } from "../Character";
 import { TeamCssColor } from "../Team";
@@ -38,6 +39,7 @@ class WeightRelay extends RelayRace {
     constructor(params) {
         const merged = { ...DEFAULT_PARAMS, ...(params || {}) };
         super(WeightRelay.ID, merged, Math.max(...merged.weights));
+        this.swimming = true; // la minimap a des cases bleues (contexte de natation)
         // couleur -> { phase: "READY" | "APNEA", diver, weights: [case de chaque poids, 0 = ramené], index: poids tiré en apnée, retrieved }
         this.state = {};
     }
@@ -123,7 +125,7 @@ class WeightRelay extends RelayRace {
             // Déplacer un poids d'une case : +1 REP auprès des coéquipiers
             game.applyEffect({ type: EffectType.RELATION, gauge: RelationGauge.REP, target: "TEAM", about: diver.name, value: p.weightRep });
             if (st.weights[st.index] > 0) {
-                return name + " tire le poids en apnée " + detail + " : il avance d'une case, le poids est maintenant case " + st.weights[st.index] + "." + tag;
+                return name + " tire le poids en apnée " + detail + " : " + il(diver) + " avance d'une case, le poids est maintenant case " + st.weights[st.index] + "." + tag;
             }
             // Poids ramené au départ : le relais passe au suivant
             st.retrieved++;
@@ -144,7 +146,7 @@ class WeightRelay extends RelayRace {
         st.diver = null;
         this.positions[color] = 0;
         game.applyEffect({ type: EffectType.RELATION, gauge: RelationGauge.REP, target: "TEAM", about: diver.name, value: -p.failRep });
-        return name + " n'arrive pas à bouger le poids " + detail + " : il remonte, regagne le départ (" + back + " essai" + (back > 1 ? "s" : "") + " de SWI facile) et passe le relais." + tag;
+        return name + " n'arrive pas à bouger le poids " + detail + " : " + il(diver) + " remonte, regagne le départ (" + back + " essai" + (back > 1 ? "s" : "") + " de SWI facile) et passe le relais." + tag;
     }
 
     refresh(game) {

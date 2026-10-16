@@ -1,3 +1,4 @@
+import { il } from "../Personalize";
 import { EffectType } from "../Effect";
 import { RelationGauge } from "../Character";
 import { RelayRace } from "./RelayRace";
@@ -28,6 +29,7 @@ class DiveRelay extends RelayRace {
     constructor(params) {
         const merged = { ...DEFAULT_PARAMS, ...(params || {}) };
         super(DiveRelay.ID, merged, merged.collars);
+        this.swimming = true; // la minimap a des cases bleues (contexte de natation)
     }
 
     start(game) {
@@ -64,7 +66,7 @@ class DiveRelay extends RelayRace {
             return name + " plonge pour le collier " + collar + " " + detail + " et le ramène !" + (color == this.playerColor ? "" : " (" + who + ")");
         }
         game.applyEffect({ type: EffectType.RELATION, gauge: RelationGauge.REP, target: "TEAM", about: diver.name, value: -p.failRep });
-        return name + " plonge pour le collier " + collar + " " + detail + " : trop profond, il revient les mains vides." + (color == this.playerColor ? "" : " (" + who + ")");
+        return name + " plonge pour le collier " + collar + " " + detail + " : trop profond, " + il(diver) + " revient les mains vides." + (color == this.playerColor ? "" : " (" + who + ")");
     }
 
     refresh(game) {

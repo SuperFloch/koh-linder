@@ -3,10 +3,10 @@
   "name": "Laurent",
   "sex": "M",
   "age": 36,
-  "job": "Maître-nageur",
+  "job": "Mannequin",
   "rarity": "LEGENDARY",
   "unlockCost": 40,
-  "bio": "Maître-nageur au grand cœur, Laurent est le roi de la plage : costaud, sociable et à l'aise dans l'eau comme personne. Pour tout le reste, il s'en remet à la chance. Mais parfois, au moment où l'on s'y attend le moins, son cerveau s'allume et il prouve à tout le monde qu'il n'est pas si bête.",
+  "bio": "Mannequin au grand cœur, Laurent est le roi de la plage : costaud, sociable et à l'aise dans l'eau comme personne. Pour tout le reste, il s'en remet à la chance. Mais parfois, au moment où l'on s'y attend le moins, son cerveau s'allume et il prouve à tout le monde qu'il n'est pas si bête.",
   "attributes": {
     "STR": 9,
     "INT": 1,
@@ -21,7 +21,11 @@
       "name": "Éclair de génie",
       "mode": "INSERT",
       "context": "INDIVIDUAL_INT",
-      "d20": [18, 19, 20],
+      "d20": [
+        18,
+        19,
+        20
+      ],
       "text": "Laurent s'écrie : « Je pensais être con mais j'le suis paaaas !! »",
       "effects": []
     }

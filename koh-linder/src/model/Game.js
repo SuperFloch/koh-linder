@@ -5,7 +5,11 @@ import { RelationGauge } from "./Character";
 import { generateCandidates, pick, shuffle } from "./CandidateGenerator";
 import { createChallenge } from "./challenges";
 import { GameHistory, HistoryType } from "./GameHistory";
+import { personalize, display } from "./Personalize";
+import { loadCampProjects } from "./Team";
 const GAME_DEFAULT_DURATION = 40;
+// Variables de texte qui rapportent les actions du joueur : « Vous » y devient son prénom surligné
+const PERSONAL_VARS = ["raceLog", "nextStep", "draftLog"];
 class Game {
     /**
      * @param {Object} content contenu chargé par ContentLoader (start, cards, characters, resources)
@@ -14,6 +18,8 @@ class Game {
     constructor(content, playerCharacter, options) {
         options = options || {};
         this.content = content;
+        // Projets de construction du camp (resources/camp_projects.json)
+        loadCampProjects(content.resources.camp_projects);
         // Mode débogage « épreuve seule » : partie lancée sur une épreuve précise (pas de Koh-points à la fin)
         this.debug = !!options.debug;
         // Dernière carte d'une épreuve lancée seule : après elle, la partie se termine
@@ -53,6 +59,8 @@ class Game {
         // Cartes de personnage déclenchées par les jets du joueur, à montrer avant la suite ; carte à reprendre ensuite
         this.pendingCards = [];
         this.resumeCard = null;
+        // Carte construite par une épreuve, à montrer au prochain `next: "QUEUED"` (carte nuit de la vie de camp)
+        this.queuedCard = null;
 
         this.finished = false;
         this.cardQueue = [];
@@ -89,12 +97,22 @@ class Game {
     left() {
         this.next("left");
     }
+    /** Swipe vers le haut / le bas : seulement pour les cartes qui proposent ces sens (`choices.up` / `choices.down`). */
+    up() {
+        this.next("up");
+    }
+    down() {
+        this.next("down");
+    }
     next(leftOrRight) {
         var currentCard = this.currentCard;
         if (this.finished || !currentCard) {
             return;
         }
         var choice = currentCard.choices[leftOrRight];
+        if (!choice) {
+            return; // sens non proposé par cette carte
+        }
         (choice.effects || []).forEach((e) => { this.applyEffect(e); });
 
         var nextString = choice.next;
@@ -240,6 +258,12 @@ class Game {
                 }
                 const returnId = this.returnStack.pop();
                 return returnId ? (this.cardPile.find((c) => c.id == returnId) || null) : null;
+            }
+            case "QUEUED": {
+                // Carte construite par une épreuve (ex: la carte nuit de la vie de camp), à montrer maintenant
+                const queued = this.queuedCard;
+                this.queuedCard = null;
+                return queued || null;
             }
             case "RESUME":
                 // Fin d'une carte de personnage intercalée : suivante en attente, sinon la carte qui était prévue
@@ -529,10 +553,24 @@ class Game {
         }
         var player = this.getEntityByName("{player}");
         var interlocutor = this.getEntityByName("{interlocutor}");
-        return text
+        const formatted = text
             .split("{player}").join(player ? player.name : "")
             .split("{interlocutor}").join(interlocutor ? interlocutor.name : "")
-            .replace(/\{(\w+)\}/g, (match, key) => (key in this.vars ? this.vars[key] : match));
+            // accords selon le sexe : {interlocutorE} = « e » pour une femme (vexé / vexée) ; {partnerLui} = « elle » si le joueur est un
+            // homme (son binôme est une femme), « lui » sinon (les binômes sont mixtes)
+            .split("{interlocutorE}").join(interlocutor && interlocutor.sex == "F" ? "e" : "")
+            .split("{partnerLui}").join(player && player.sex == "M" ? "elle" : "lui")
+            .replace(/\{(\w+)\}/g, (match, key) => (key in this.vars ? (PERSONAL_VARS.includes(key) ? this.personalize(this.vars[key]) : this.vars[key]) : match));
+        return display(formatted);
+    }
+    /** Texte prêt à afficher (sections de compte rendu) : détail des jets en labels, codes de stats en symboles. */
+    display(text) {
+        return display(text);
+    }
+    /** Texte d'action du joueur : « Vous nagez » -> « Laurent nage » (prénom marqué pour le surlignage, voir Personalize.js). */
+    personalize(text) {
+        const player = this.getEntityByName("{player}");
+        return player ? personalize(text, player.name) : text;
     }
 }
 export { Game, GAME_DEFAULT_DURATION }

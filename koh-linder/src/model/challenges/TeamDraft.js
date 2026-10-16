@@ -1,3 +1,4 @@
+import { mark, il, accord } from "../Personalize";
 import { shuffle } from "../CandidateGenerator";
 import { decide, DecisionContext } from "../Decision";
 import { EffectType } from "../Effect";
@@ -89,7 +90,7 @@ class TeamDraft extends Challenge {
         const lines = [];
         if (this.isPlayerTurn(game)) {
             if (!this.isSelectable(game, this.selection)) {
-                this.log = "Cliquez d'abord sur le portrait du candidat que vous voulez dans votre équipe, puis swipez pour valider.";
+                this.log = "Cliquez d'abord sur le portrait du candidat souhaité dans votre équipe, puis swipez pour valider.";
                 this.publish(game);
                 return "ID:" + card.id;
             }
@@ -198,7 +199,7 @@ class TeamDraft extends Challenge {
         if (chief.name == player.name) {
             return "Vous choisissez " + name + ".";
         }
-        return candidate.isPlayer ? chief.name + " vous choisit dans son équipe !" : chief.name + " choisit " + name + ".";
+        return candidate.isPlayer ? chief.name + " choisit " + mark(candidate.name) + " dans son équipe !" : chief.name + " choisit " + name + ".";
     }
     /**
      * Conséquences relationnelles d'un choix (échelle de référence) :
@@ -214,16 +215,16 @@ class TeamDraft extends Challenge {
         });
         const last = order == this.perChief - 1;
         if (order == 0) {
-            rel(RelationGauge.AFF, name, chief.name, 3, name + " est le premier choisi par " + chief.name + " : il lui en est reconnaissant");
-            rel(RelationGauge.REP, "ALL", name, 2, name + " est choisi en premier par " + chief.name + " : tout le monde le remarque");
+            rel(RelationGauge.AFF, name, chief.name, 3, name + " est " + (candidate.sex == "F" ? "la première choisie" : "le premier choisi") + " par " + chief.name + " : " + il(candidate) + " lui en est reconnaissant" + (candidate.sex == "F" ? "e" : ""));
+            rel(RelationGauge.REP, "ALL", name, 2, name + " est " + accord(candidate, "choisi") + " en premier par " + chief.name + " : tout le monde " + (candidate.sex == "F" ? "la" : "le") + " remarque");
         } else if (order == 1) {
-            rel(RelationGauge.AFF, name, chief.name, 2, name + " est le deuxième choisi par " + chief.name);
+            rel(RelationGauge.AFF, name, chief.name, 2, name + " est " + (candidate.sex == "F" ? "la deuxième choisie" : "le deuxième choisi") + " par " + chief.name);
         } else if (!last) {
             rel(RelationGauge.AFF, name, chief.name, 1);
         }
         // Dernier choisi de son sexe : il n'en reste plus de ce sexe dans le groupe
         if (this.pool.every((n) => game.getEntityByName(n).sex != candidate.sex)) {
-            rel(RelationGauge.REP, "ALL", name, -2, name + " est " + (candidate.sex == "M" ? "le dernier homme choisi" : "la dernière femme choisie") + " : tout le monde le remarque");
+            rel(RelationGauge.REP, "ALL", name, -2, name + " est " + (candidate.sex == "M" ? "le dernier homme choisi" : "la dernière femme choisie") + " : tout le monde " + (candidate.sex == "F" ? "la" : "le") + " remarque");
         }
     }
     avatarBorder(candidate) {

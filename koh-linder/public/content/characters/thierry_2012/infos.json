@@ -8,12 +8,12 @@
   "unlockCost": 0,
   "bio": "Magnétiseur de campagne, Thierry jure pouvoir calmer une tempête d'un simple regard. Personne n'a jamais vérifié, mais ses mains solides et sa sérénité à toute épreuve impressionnent. Il médite chaque matin face à l'horizon, même quand l'horizon ne lui a rien demandé.",
   "attributes": {
-    "STR": 9,
-    "INT": 4,
-    "SWI": 5,
-    "AGI": 6,
+    "STR": 7,
+    "INT": 6,
+    "SWI": 4,
+    "AGI": 1,
     "OBS": 6,
-    "SOC": 5
+    "SOC": 4
   },
   "cards": [
     {

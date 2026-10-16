@@ -73,7 +73,9 @@
             "challenge": { "id": "CAMP_LIFE", "onFinish": "ID:camp_06_fin" },
             "choices": {
                 "left": { "text": "{campLeft}", "next": "" },
-                "right": { "text": "{campRight}", "next": "" }
+                "right": { "text": "{campRight}", "next": "" },
+                "up": { "text": "{campUp}", "next": "" },
+                "down": { "text": "{campDown}", "next": "" }
             }
         },
         {

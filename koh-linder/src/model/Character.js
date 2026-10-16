@@ -54,6 +54,19 @@ const CardMode = {
     INSERT: "INSERT"
 };
 
+/**
+ * Symboles des stats affichés au joueur (à la place des codes) : force = bras, intelligence = cerveau, nage = nageur, agilité =
+ * danseuse, observation = yeux, social = sourire.
+ */
+const STAT_ICONS = {
+    STR: "\u{1F4AA}",
+    INT: "\u{1F9E0}",
+    SWI: "\u{1F3CA}",
+    AGI: "\u{1F938}",
+    OBS: "\u{1F440}",
+    SOC: "\u{1F60A}"
+};
+
 /** Niveaux de rareté des personnages de la réserve. */
 const Rarity = {
     RARE: "RARE",
@@ -175,4 +188,4 @@ class Candidate extends Character {
         return theCard;
     }
 }
-export { Character, Candidate, Attribute, RollContext, CardMode, Rarity, RarityLabel,RelationGauge, ENERGY_START, ENERGY_MAX, PHYSICAL_STATS, PHYSICAL_ROLL_ENERGY_COST }
+export { Character, Candidate, Attribute, RollContext, CardMode, STAT_ICONS, Rarity, RarityLabel,RelationGauge, ENERGY_START, ENERGY_MAX, PHYSICAL_STATS, PHYSICAL_ROLL_ENERGY_COST }

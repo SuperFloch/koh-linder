@@ -1,7 +1,7 @@
 <template>
     <!-- Design « Braise · Planche » (Maquette/) : paysage en fond, header bois, bandeau, carte au centre, choix en bas -->
     <div class="stretch gamePage">
-        <TropicalScene :variant="sceneVariant" :period="game.period" />
+        <TropicalScene :variant="sceneVariant" :period="scenePeriod" />
         <GameTopBar :game="game"/>
         <!-- Sous le header (laisse la place au médaillon du joueur) : bandeau du camp, minimap d'épreuve ou portraits -->
         <div class="hud">
@@ -16,7 +16,7 @@
             <div class="currentCard" ref="currentCard" v-if="card">
               <div class="cardInner">
                 <CardIllustration v-if="hasIllustration" :class="{ compact: card.type == 'CHALLENGE_TURN' }" :img="card.img"
-                    :variant="illustrationVariant" :period="game.period" />
+                    :variant="illustrationVariant" :period="scenePeriod" />
                 <div class="cardBody" :class="{ centered: card.type == 'PORTRAITS' }">
                     <div class="cardName display-font">{{ game.format(card.name) }}</div>
                     <div v-if="card.type == 'PORTRAITS' && portrait" class="portrait">
@@ -25,18 +25,23 @@
                         <div>{{ portrait.job }}, {{ portrait.age }} ans</div>
                         <div class="portraitCount">{{ portraitIndex + 1 }} / {{ game.candidates.length }}</div>
                     </div>
-                    <div class="cardText">{{ cardText }}</div>
                     <!-- Épreuves d'équipe : un bloc par équipe, bordure de sa couleur, police réduite pour l'équipe adverse -->
                     <template v-if="hasSections">
                         <div v-for="s in game.logSections" :key="s.color" class="teamSection" :class="{ rival: !s.mine }"
-                            :style="{ borderColor: teamCss(s.color) }">{{ s.text }}</div>
+                            :style="{ borderColor: teamCss(s.color) }"><template v-for="(seg, i) in segments(game.display(game.personalize(s.text)))" :key="i"><mark v-if="seg.kind == 'me'" class="me">{{ seg.text }}</mark><span v-else-if="seg.kind == 'roll'" class="rollGroup"><span v-for="(icon, j) in seg.icons" :key="j" class="rollLabel" :class="seg.ok ? 'ok' : 'fail'" :title="seg.ok ? 'Réussite' : 'Échec'">{{ icon }}</span></span><template v-else>{{ seg.text }}</template></template></div>
                     </template>
+                    <div class="cardText"><template v-for="(seg, i) in segments(cardText)" :key="i"><mark v-if="seg.kind == 'me'" class="me">{{ seg.text }}</mark><span v-else-if="seg.kind == 'roll'" class="rollGroup"><span v-for="(icon, j) in seg.icons" :key="j" class="rollLabel" :class="seg.ok ? 'ok' : 'fail'" :title="seg.ok ? 'Réussite' : 'Échec'">{{ icon }}</span></span><template v-else>{{ seg.text }}</template></template></div>
                 </div>
                 <!-- Nature du swipe : flèche biface = pas de décision ; deux flèches colorées = décision -->
                 <div class="swipeSymbol">
-                    <span v-if="isDecision" class="arrow decisionLeft" title="Décision">&#8592;</span>
-                    <span v-if="isDecision" class="arrow decisionRight" title="Décision">&#8594;</span>
-                    <span v-else class="arrow neutral" title="Pas de décision">&#8596;</span>
+                    <template v-if="hasVertical">
+                        <span v-for="c in choiceList" :key="c.dir" class="arrow" :class="'dir-' + c.dir" title="Décision">{{ c.arrow }}</span>
+                    </template>
+                    <template v-else>
+                        <span v-if="isDecision" class="arrow dir-left" title="Décision">&#8592;</span>
+                        <span v-if="isDecision" class="arrow dir-right" title="Décision">&#8594;</span>
+                        <span v-else class="arrow neutral" title="Pas de décision">&#8596;</span>
+                    </template>
                 </div>
               </div>
             </div>
@@ -53,18 +58,24 @@
             </div>
           </div>
           <!-- Bande verticale collée au bord de l'écran, quand le swipe est assez avancé pour valider le choix : couleur du choix, blanche si ce n'est pas une décision -->
-          <div v-if="card && commitSide" class="commitBand" :class="[commitSide, isDecision ? commitSide + 'Color' : 'neutralColor']"></div>
+          <div v-if="card && commitDir" class="commitBand" :class="[commitDir, isDecision ? commitDir + 'Color' : 'neutralColor']"></div>
           <!-- Choix sous la carte, toujours visibles : toucher un bouton = swiper de ce côté -->
-          <div class="choiceZone">
-              <template v-if="card && isDecision">
-                  <button class="choiceBtn left" :class="{ active: slidingLeft }" @click="choose('left')">
+          <div class="choiceZone" :class="{ fourWay: hasVertical }">
+              <!-- Carte à 4 sens de swipe (vie de camp) : un bouton par option disponible -->
+              <template v-if="card && hasVertical">
+                  <button v-for="c in choiceList" :key="c.dir" class="choiceBtn" :class="[c.dir, { active: slideDir == c.dir }]" @click="choose(c.dir)">
+                      <span class="choiceArrow" aria-hidden="true">{{ c.arrow }}</span><span>{{ c.text }}</span>
+                  </button>
+              </template>
+              <template v-else-if="card && isDecision">
+                  <button class="choiceBtn left" :class="{ active: slideDir == 'left' }" @click="choose('left')">
                       <span class="choiceArrow" aria-hidden="true">&#8592;</span><span>{{ game.format(card.choices.left.text) }}</span>
                   </button>
-                  <button class="choiceBtn right" :class="{ active: slidingRight }" @click="choose('right')">
+                  <button class="choiceBtn right" :class="{ active: slideDir == 'right' }" @click="choose('right')">
                       <span>{{ game.format(card.choices.right.text) }}</span><span class="choiceArrow" aria-hidden="true">&#8594;</span>
                   </button>
               </template>
-              <button v-else-if="card" class="choiceBtn neutral" :class="{ active: slidingLeft || slidingRight }" @click="choose('right')">
+              <button v-else-if="card" class="choiceBtn neutral" :class="{ active: slideDir == 'left' || slideDir == 'right' }" @click="choose('right')">
                   <span>{{ game.format(card.choices.right.text) || 'Continuer' }}</span><span class="choiceArrow" aria-hidden="true">&#8596;</span>
               </button>
           </div>
@@ -83,10 +94,17 @@ import CampHeader from './CampHeader.vue';
 import TropicalScene from './TropicalScene.vue';
 import CardIllustration from './CardIllustration.vue';
 import { TeamCssColor } from 'src/model/Team';
+import { splitRich } from 'src/model/Personalize';
 import { DEBUG } from 'src/debug';
 
 // Durée d'affichage de chaque portrait sur la carte PORTRAITS
 const PORTRAIT_INTERVAL_MS = 700;
+// Sens de swipe : ordre d'affichage et flèches
+const DIRECTION_ORDER = ['left', 'up', 'right', 'down'];
+const DIRECTION_ARROWS = { left: '←', up: '↑', right: '→', down: '↓' };
+// Distance de glissement (px) à partir de laquelle le choix est validé : horizontal / vertical
+const COMMIT_X = 200;
+const COMMIT_Y = 120;
 
 export default defineComponent({
     emits: ['end'],
@@ -107,9 +125,8 @@ export default defineComponent({
     data: function(){
         return {
             hammer: null,
-            slidingLeft: false,
-            slidingRight: false,
-            commitSide: null,
+            slideDir: null,   // sens du swipe en cours (left / right / up / down)
+            commitDir: null,  // sens du swipe quand il est assez avancé pour valider le choix
             portraitIndex: 0,
             portraitTimer: null,
             debug: DEBUG
@@ -137,7 +154,14 @@ export default defineComponent({
             return this.showCamp ? 'camp' : 'beach';
         },
         // Illustration par défaut d'une carte sans `img` : bateau pendant l'introduction, sinon la scène du moment
+        // Période du paysage : la carte nuit a l'arrière-plan de nuit, quelle que soit la période du jeu
+        scenePeriod(){
+            return this.card && this.card.theme == 'NUIT' ? 'NIGHT' : this.game.period;
+        },
         illustrationVariant(){
+            if(this.card && this.card.theme == 'NUIT'){
+                return 'camp';
+            }
             if(this.card && this.card.theme == 'INTRODUCTION'){
                 return 'sea';
             }
@@ -161,10 +185,28 @@ export default defineComponent({
         portrait(){
             return this.game.candidates[this.portraitIndex];
         },
-        // Le swipe est une décision quand les deux choix proposent des textes différents (« Suivant » / « Suivant » n'en est pas une)
+        // Options de swipe disponibles : gauche et droite, plus haut / bas quand la carte les propose avec un texte non vide
+        choiceList(){
+            if(!this.card){
+                return [];
+            }
+            return DIRECTION_ORDER
+                .filter((dir) => this.card.choices[dir])
+                .map((dir) => ({ dir, arrow: DIRECTION_ARROWS[dir], text: this.game.format(this.card.choices[dir].text || '').trim() }))
+                .filter((c) => c.text || c.dir == 'left' || c.dir == 'right');
+        },
+        // Carte à 4 sens de swipe (vie de camp) : au moins une option haut / bas
+        hasVertical(){
+            return this.choiceList.some((c) => c.dir == 'up' || c.dir == 'down');
+        },
+        // Le swipe est une décision quand les deux choix proposent des textes différents (« Suivant » / « Suivant » n'en est pas une) ;
+        // une carte à 4 sens en est toujours une
         isDecision(){
             if(!this.card){
                 return false;
+            }
+            if(this.hasVertical){
+                return true;
             }
             const left = this.game.format(this.card.choices.left.text || '').trim();
             const right = this.game.format(this.card.choices.right.text || '').trim();
@@ -176,16 +218,16 @@ export default defineComponent({
         }
     },
     methods:{
+        // Découpe un texte pour surligner le prénom du joueur (marqueurs de Personalize.js)
+        segments(text){
+            return splitRich(text || '');
+        },
         teamCss(color){
             return TeamCssColor[color] || 'var(--wood)';
         },
         // Bouton de choix : même effet qu'un swipe complet de ce côté
-        choose(side){
-            if(side == 'left'){
-                this.game.left();
-            } else {
-                this.game.right();
-            }
+        choose(dir){
+            this.game[dir]();
         }
     },
     watch:{
@@ -214,9 +256,11 @@ export default defineComponent({
         clearInterval(this.portraitTimer);
     },
     mounted: function(){
-        this.hammer = new Hammer(this.$refs.swipe,{})
+        // Pan dans les 4 directions (par défaut Hammer ne reconnaît que l'horizontal et laisse le navigateur gérer le vertical,
+        // ce qui coupait le swipe sur les zones défilantes de la carte)
+        this.hammer = new Hammer(this.$refs.swipe, { recognizers: [[Hammer.Pan, { direction: Hammer.DIRECTION_ALL, threshold: 4 }]] });
         this.hammer.on('pan',(e)=>{
-            if (e.deltaX === 0) return;
+            if (e.deltaX === 0 && e.deltaY === 0) return;
             if (e.center.x === 0 && e.center.y === 0) return;
             if (!this.$refs.currentCard) return;
             var xMulti = e.deltaX * 0.03;
@@ -224,27 +268,31 @@ export default defineComponent({
             var rotate = xMulti * yMulti;
             this.$refs.currentCard.style.transform = 'translate(' + e.deltaX + 'px, ' + e.deltaY + 'px) rotate(' + rotate + 'deg)';
 
-            this.slidingLeft = e.deltaX < 0;
-            this.slidingRight = e.deltaX > 0;
+            // Sens du swipe : vertical seulement si la carte propose haut / bas (et que ce sens existe), sinon horizontal
+            var dir;
+            if(this.hasVertical && Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+                dir = e.deltaY < 0 ? 'up' : 'down';
+                if(!this.choiceList.some((c) => c.dir == dir)){
+                    dir = null;
+                }
+            } else {
+                dir = e.deltaX < 0 ? 'left' : 'right';
+            }
+            this.slideDir = dir;
             // Le swipe est assez avancé pour passer à la carte suivante (même seuil que la validation ci-dessous)
-            this.commitSide = e.deltaX > 200 ? 'right' : (e.deltaX < -200 ? 'left' : null);
+            const far = dir == 'left' || dir == 'right' ? Math.abs(e.deltaX) > COMMIT_X : Math.abs(e.deltaY) > COMMIT_Y;
+            this.commitDir = dir && far ? dir : null;
 
-            if(e.isFinal){
-                if(e.deltaX > 200){
-                    this.game.right();
-                }
-                if(e.deltaX < -200){
-                    this.game.left();
-                }
+            if(e.isFinal && this.commitDir){
+                this.game[this.commitDir]();
             }
         });
-        this.hammer.on('panend',(e)=>{
+        this.hammer.on('panend',()=>{
             if (this.$refs.currentCard) {
                 this.$refs.currentCard.style.transform = '';
             }
-            this.slidingLeft = false;
-            this.slidingRight = false;
-            this.commitSide = null;
+            this.slideDir = null;
+            this.commitDir = null;
         })
     }
 })
@@ -271,6 +319,11 @@ export default defineComponent({
     flex-direction: column;
     padding: 12px 16px 16px;
     overflow: hidden;
+    touch-action: none;
+}
+/* Les zones défilantes de la carte (texte) doivent aussi laisser passer le swipe : sans cela, un geste commencé sur la partie basse
+   de la carte est repris par le navigateur (défilement) et le swipe ne fonctionne plus */
+.currentCard, .cardInner, .cardBody, .choiceZone{
     touch-action: none;
 }
 /* Place pour le bouton du journal de débogage, sous les choix */
@@ -407,11 +460,32 @@ export default defineComponent({
 .commitBand.right{
     right: 0;
 }
+/* Swipes vers le haut / le bas : bande horizontale collée au bord haut / bas de l'écran */
+.commitBand.up, .commitBand.down{
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 14px;
+}
+.commitBand.up{
+    top: 0;
+    bottom: auto;
+}
+.commitBand.down{
+    top: auto;
+    bottom: 0;
+}
 .commitBand.leftColor{
     background-color: var(--jungle-soft);
 }
 .commitBand.rightColor{
     background-color: var(--sea-soft);
+}
+.commitBand.upColor{
+    background-color: var(--sky);
+}
+.commitBand.downColor{
+    background-color: var(--amber);
 }
 .commitBand.neutralColor{
     background-color: #ffffff;
@@ -437,11 +511,72 @@ export default defineComponent({
 .arrow.neutral{
     color: var(--wood-mid);
 }
-.arrow.decisionLeft{
+.arrow.dir-left{
     color: var(--jungle-soft);
 }
-.arrow.decisionRight{
+.arrow.dir-right{
     color: var(--sea-soft);
+}
+.arrow.dir-up{
+    color: var(--sky);
+}
+.arrow.dir-down{
+    color: var(--amber);
+}
+/* Carte à 4 sens de swipe : grille haut / gauche-droite / bas */
+.choiceZone.fourWay{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "up up" "left right" "down down";
+    gap: 6px;
+    min-height: 0;
+}
+.fourWay .choiceBtn{
+    min-height: 38px;
+    padding: 4px 10px;
+    font-size: 0.82rem;
+}
+.fourWay .choiceBtn.up{
+    grid-area: up;
+    justify-content: center;
+    background-color: #1e7a8f;
+}
+.fourWay .choiceBtn.down{
+    grid-area: down;
+    justify-content: center;
+    color: var(--wood-dark);
+    background-color: var(--amber);
+}
+.fourWay .choiceBtn.left{
+    grid-area: left;
+}
+.fourWay .choiceBtn.right{
+    grid-area: right;
+}
+/* Résultat d'un jet de dé : symbole de la stat testée sur fond vert (réussite) ou rouge (échec) ; plusieurs labels côte à côte pour un jet joint */
+.rollGroup{
+    display: inline-flex;
+    gap: 2px;
+    vertical-align: middle;
+}
+.rollLabel{
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: #fff;
+    background-color: #2e7d32;
+}
+.rollLabel.fail{
+    background-color: #c62828;
+}
+/* Prénom du joueur dans les comptes rendus d'action : surligné pour le démarquer */
+.me{
+    padding: 0 4px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: var(--wood-dark);
+    background-color: var(--amber);
 }
 /* Compte rendu d'une équipe pendant une épreuve : bordure de la couleur de l'équipe ; l'équipe adverse en plus petit */
 .teamSection{

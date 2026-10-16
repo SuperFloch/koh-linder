@@ -1,9 +1,11 @@
+import { Card } from "../Card";
+import { mark } from "../Personalize";
 import { pick, shuffle } from "../CandidateGenerator";
 import { decide, DecisionContext } from "../Decision";
 import { EffectType } from "../Effect";
 import { RelationGauge, RollContext } from "../Character";
 import { HistoryType } from "../GameHistory";
-import { CAMP_CABIN_STEPS } from "../Team";
+import { CAMP_PROJECTS } from "../Team";
 import { Period, PERIOD_ORDER, PERIOD_LABELS, PERIOD_ACTIONS, PeriodKind, PERIOD_KINDS } from "../Time";
 import { Challenge } from "./Challenge";
 
@@ -17,10 +19,11 @@ const Action = {
     FISH: "FISH",           // récolte : coquillages (OBS)
     WATER: "WATER",         // ravitaillement : eau
     WOOD: "WOOD",           // ravitaillement : bois
-    CABIN: "CABIN",         // entretien : une étape de construction de la cabane
-    FIRE: "FIRE",           // entretien : tenter d'allumer le feu (jet joint d'INT à trois)
-    TALK: "TALK",           // social : discussion
-    PAUSE: "PAUSE",         // social : pause
+    BUILD: "BUILD",         // camp : une étape du projet de construction en cours (cabane, puis projets supplémentaires)
+    FIRE: "FIRE",           // camp : tenter d'allumer le feu (jet joint d'INT à trois)
+    TALK: "TALK",           // discussion (jet de SOC avec un candidat présent)
+    PAUSE: "PAUSE",         // camp : se reposer
+    SWIM: "SWIM",           // mer : se baigner (+2 énergie, +1 AFF entre les baigneurs d'une même équipe)
     HARPOON: "HARPOON"      // récolte (kit de pêche) : pêche au harpon, SWI + OBS difficile
 };
 
@@ -60,28 +63,58 @@ const COMFORT_REWARDS = ["FISHING_KIT", "MATCH", "FAUNA_GUIDE", "RICE", "HOT_MEA
 /** Noms courts des actions, pour annoncer au joueur ce que ses coéquipiers ont choisi. */
 const ACTION_LABELS = {
     WAKE_CALM: "lever tranquille", WAKE_RISE: "lever direct", FEAST: "festin", RATION: "ration",
-    PLANTS: "plantes", FISH: "pêche", HARPOON: "harpon", WATER: "eau", WOOD: "bois", CABIN: "cabane", FIRE: "feu", TALK: "discussion", PAUSE: "pause"
+    PLANTS: "plantes", FISH: "pêche", HARPOON: "harpon", WATER: "eau", WOOD: "bois", BUILD: "construction", FIRE: "feu", TALK: "discussion", PAUSE: "repos", SWIM: "baignade"
 };
 
+/** Les quatre sens de swipe, dans l'ordre d'affichage. */
+const DIRECTIONS = ["left", "up", "right", "down"];
+
+/** Nom court et avancement du projet de construction en cours d'un camp, pour les boutons : « Cabane 3/15 · 2 bois ». */
+function buildLabel(camp) {
+    const id = camp.currentProject();
+    if (!id) {
+        return "Plus rien à construire";
+    }
+    const project = CAMP_PROJECTS[id];
+    return "Construire : " + project.name + " (" + camp.projectSteps(id) + "/" + project.steps + " · " + project.wood + " bois)";
+}
+
 /**
- * Arbre de choix des tâches du matin et de l'après-midi, parcouru en swipant : chaque nœud propose deux options (gauche /
- * droite) menant à un autre nœud ou à une action. Un `label` peut être une fonction du camp (état affiché dans le bouton).
- * Hors du camp : Récolte (Plantes / Pêche), Ravitaillement (Eau / Bois). Au camp : Entretien (Cabane / Feu), Social (Discussion / Pause).
+ * Arbre de choix des tâches du matin et de l'après-midi, parcouru en swipant dans les 4 directions : chaque nœud propose jusqu'à
+ * quatre options (left / up / right / down) menant à un autre nœud ou à une action. Un `label` peut être une fonction du camp ; une
+ * option avec `if` n'est proposée que si la fonction renvoie vrai (ex: harpon, seulement avec le kit de pêche).
+ * Gauche : Forêt (bois, eau, nourriture, discuter) · Haut : rester au camp (feu, repos, construire, discuter) · Droite : Mer
+ * (coquillages, baignade, harpon, discuter). Une tâche = 2 swipes.
  */
+const TALK_OPTION = { label: "Discuter (SOC)", action: Action.TALK };
 const TASK_TREE = {
-    ROOT: { question: "Où voulez-vous aller ?", left: { label: "Hors du camp", node: "OUTSIDE" }, right: { label: "Au camp", node: "CAMP" } },
-    OUTSIDE: { question: "Que faire hors du camp ?", left: { label: "Récolte", node: "HARVEST" }, right: { label: "Ravitaillement", node: "SUPPLY" } },
-    CAMP: { question: "Que faire au camp ?", left: { label: "Entretien", node: "UPKEEP" }, right: { label: "Social", node: "SOCIAL" } },
-    HARVEST: { question: "Que récoltez-vous ?", left: { label: "Plantes (INT, risqué)", action: Action.PLANTS }, right: { label: "Pêche aux coquillages (OBS)", action: Action.FISH } },
-    // Remplace la pêche de HARVEST quand l'équipe a le kit de pêche
-    FISHING: { question: "Comment pêchez-vous ?", left: { label: "Coquillages (OBS)", action: Action.FISH }, right: { label: "Harpon (SWI + OBS, difficile)", action: Action.HARPOON } },
-    SUPPLY: { question: "Que rapportez-vous ?", left: { label: "Eau (+10)", action: Action.WATER }, right: { label: "Bois (+10)", action: Action.WOOD } },
-    UPKEEP: {
-        question: "Que faut-il entretenir ?",
-        left: { label: (camp) => "Cabane (" + camp.equipements.cabin + "/" + CAMP_CABIN_STEPS + " · 2 bois)", action: Action.CABIN },
-        right: { label: (camp) => camp.equipements.fire ? "Feu (allumé)" : "Feu (jet joint d'INT, 5 bois min.)", action: Action.FIRE }
+    ROOT: {
+        question: "Où passez-vous ce temps ?",
+        left: { label: "Forêt", node: "FOREST" },
+        up: { label: "Rester au camp", node: "CAMP" },
+        right: { label: "Mer", node: "SEA" }
     },
-    SOCIAL: { question: "Comment passez-vous ce temps au camp ?", left: { label: "Discussion", action: Action.TALK }, right: { label: "Pause (repos)", action: Action.PAUSE } }
+    FOREST: {
+        question: "Que faites-vous en forêt ?",
+        left: { label: "Bois (+4)", action: Action.WOOD },
+        up: { label: (camp) => camp.equipements.waterSource ? "Eau (+5)" : "Chercher une source d'eau (OBS, très difficile)", action: Action.WATER },
+        right: { label: "Nourriture (plantes, INT)", action: Action.PLANTS },
+        down: TALK_OPTION
+    },
+    CAMP: {
+        question: "Que faites-vous au camp ?",
+        left: { label: (camp) => camp.equipements.fire ? "Feu (allumé)" : "Faire du feu (jet joint d'INT, 5 bois min.)", action: Action.FIRE },
+        up: { label: buildLabel, action: Action.BUILD },
+        right: { label: "Se reposer (+3 énergie)", action: Action.PAUSE },
+        down: TALK_OPTION
+    },
+    SEA: {
+        question: "Que faites-vous à la mer ?",
+        left: { label: "Chercher des coquillages (OBS)", action: Action.FISH },
+        up: { label: "Pêcher au harpon (SWI + OBS, difficile)", action: Action.HARPOON, if: (camp) => camp.equipements.fishingKit },
+        right: { label: "Se baigner (+2 énergie)", action: Action.SWIM },
+        down: TALK_OPTION
+    }
 };
 
 /** Choix direct (sans arbre) des périodes de réveil, de repas et de nuit : gauche / droite. */
@@ -101,7 +134,7 @@ const DEFAULT_PARAMS = {
     councilDays: [],               // jours de conseil (explicites) : pas d'action de nuit
 
     // Énergie. Le sommeil ne rend plus un montant fixe : une carte nuit est tirée (voir NIGHT_CARDS).
-    taskEnergy: { PLANTS: 3, FISH: 3, HARPOON: 3, WATER: 3, WOOD: 3, CABIN: 2, FIRE: 0, TALK: 1, PAUSE: 0 }, // coût des tâches du matin et de l'après-midi
+    taskEnergy: { PLANTS: 3, FISH: 3, HARPOON: 3, WATER: 3, WOOD: 3, BUILD: 2, FIRE: 0, TALK: 1, PAUSE: 0, SWIM: 0 }, // coût des tâches du matin et de l'après-midi
     pauseEnergy: 3,                // énergie rendue par une pause (au lieu d'un coût)
     rationEnergy: 2,               // repas rationné
     feastEnergy: 5,                // festin
@@ -125,11 +158,16 @@ const DEFAULT_PARAMS = {
     harpoonThreshold: 34,          // jet combiné d20 + SWI et d20 + OBS (difficile)
     harpoonSuccessFood: 8,         // échec : 0 nourriture
     faunaGuideBonus: 4,            // bonus aux jets d'OBS de la survie avec le guide local
-    supplyAmount: 10,              // eau et bois : ne ratent jamais
+    woodAmount: 4,                 // bois ramené (ne rate jamais)
+    waterAmount: 5,                // eau ramenée une fois la source trouvée (ne rate jamais)
+    waterSourceThreshold: 22,      // tant que la source n'est pas trouvée : jet d'OBS très difficile (d20 + OBS)
+    waterSourceRep: 3,             // REP gagnée en trouvant la source
+    waterSourceWater: 5,           // ravitaillement instantané en trouvant la source
     talkThreshold: 10,             // jet d20 + SOC d'une discussion
 
-    // Cabane : CAMP_CABIN_STEPS étapes de construction, chacune consomme du bois
-    cabinWood: 2,
+    // Construction : voir CAMP_PROJECTS (Team.js) — jet d'INT par étape, bois dépensé en cas de réussite
+    swimEnergy: 2,                 // baignade : énergie gagnée
+    swimAff: 1,                    // AFF mutuel entre les baigneurs d'une même équipe
     // Feu : jet joint d'INT de 3 aventuriers (3 énergie chacun), 5 bois minimum dans la réserve pour commencer
     fireThreshold: 50,
     fireGroup: 3,
@@ -187,6 +225,8 @@ class CampLife extends Challenge {
         this.pendingChallenge = false; // une épreuve doit être lancée à la fin du tour (matin d'un jour d'épreuve)
         this.actionCount = {};    // nom -> nombre total d'actions dépensées (suivi / tests)
         this.planned = {};        // nom -> action choisie par chaque non-joueur pour l'action en cours (avant le joueur)
+        this.round = {};          // nom -> action effectivement réalisée dans le tour en cours
+        this.nightEvent = null;   // carte nuit de l'équipe du joueur à montrer sur sa propre carte { day, name, text }
         this.pendingKind = null;  // DayKind de l'épreuve à lancer à la fin du tour
         this.activeKind = null;   // DayKind de l'épreuve en cours (récompense de confort / immunité au retour)
         this.comfortIndex = 0;    // prochaine récompense de confort (COMFORT_REWARDS)
@@ -209,6 +249,10 @@ class CampLife extends Challenge {
     playTurn(game, leftOrRight, card) {
         const kind = PERIOD_KINDS[this.period];
         const choice = this.choiceNode(kind)[leftOrRight];
+        if (!choice) {
+            // Sens sans option (ex: haut sans kit de pêche) : rien ne se passe
+            return "ID:" + card.id;
+        }
         if (choice.node) {
             // Descente dans l'arbre des tâches : pas encore d'action dépensée
             this.node = choice.node;
@@ -225,11 +269,13 @@ class CampLife extends Challenge {
             return "ID:" + card.id;
         }
         this.turnNotes = [];
+        this.round = {};
         const playerLog = this.perform(game, player, choice.action);
         if (kind != PeriodKind.WAKE) {
             // Les non-joueurs réalisent le choix qu'ils avaient déjà fait AVANT le joueur (voir planNpcs)
             this.candidates.filter((c) => !c.isPlayer).forEach((c) => this.perform(game, c, this.planned[c.name] || this.npcChoice(game, c, kind)));
         }
+        this.bathe(game);
         this.log = [playerLog, ...this.turnNotes].filter((l) => l).join(" ");
         this.turnNotes = [];
         this.node = "ROOT";
@@ -245,9 +291,47 @@ class CampLife extends Challenge {
             // réunification, individuelle après), remplace le matin ; on reprend la vie de camp à midi ensuite.
             this.pendingChallenge = false;
             this.activeKind = this.pendingKind;
-            return "CHALLENGE:" + game.challengeContext + ":" + card.id;
+            return this.withNightCard(game, "CHALLENGE:" + game.challengeContext + ":" + card.id);
         }
-        return this.finished ? card.challenge.onFinish : "ID:" + card.id;
+        return this.withNightCard(game, this.finished ? card.challenge.onFinish : "ID:" + card.id);
+    }
+    /**
+     * Si une carte nuit vient d'être tirée pour l'équipe du joueur, elle a sa propre carte (nom de la carte nuit, texte) montrée
+     * avant la suite `next`.
+     * @returns {string} `next` à suivre : la carte nuit en attente (QUEUED) ou la suite directement
+     */
+    withNightCard(game, next) {
+        const event = this.nightEvent;
+        this.nightEvent = null;
+        if (!event) {
+            return next;
+        }
+        game.queuedCard = Card.deserialize({
+            id: "night_" + event.day,
+            single_use: false,
+            name: event.name,
+            type: "NARRATION",
+            theme: "NUIT",
+            img: "",
+            text: event.text,
+            choices: { left: { text: "Suivant", next }, right: { text: "Suivant", next } }
+        });
+        return "QUEUED";
+    }
+    /**
+     * Baignade : les baigneurs d'une même équipe (le joueur et les non-joueurs qui ont choisi la mer) gagnent un peu d'affection
+     * mutuelle (+1 AFF, banal : pas d'historique).
+     */
+    bathe(game) {
+        const bathers = this.candidates.filter((c) => this.round[c.name] == Action.SWIM);
+        game.teams.forEach((team) => {
+            const group = bathers.filter((c) => c.team == team.color);
+            group.forEach((a) => group.filter((b) => b !== a).forEach((b) => a.changeRelation(b.name, RelationGauge.AFF, this.params.swimAff)));
+            const player = group.find((c) => c.isPlayer);
+            if (player && group.length > 1) {
+                this.turnNotes.push("Vous vous baignez avec " + group.filter((c) => !c.isPlayer).map((c) => c.name).join(", ") + " (+" + this.params.swimAff + " d'affection).");
+            }
+        });
     }
     close(game) {
         game.period = null;
@@ -380,7 +464,7 @@ class CampLife extends Challenge {
             const card = shared || this.drawNightCard();
             const text = this.applyNightCard(game, team, card);
             if (team.color == player.team) {
-                this.turnNotes.push(card.name + " : " + text);
+                this.nightEvent = { day: game.currentDay, name: card.name, text };
             }
         });
     }
@@ -390,7 +474,8 @@ class CampLife extends Challenge {
         const members = game.teamMembers(team.color);
         const extra = [];
         const energy = card.energyCabin !== undefined && camp.cabinDone ? card.energyCabin : card.energy;
-        members.forEach((c) => c.changeEnergy(energy));
+        const nightBonus = camp.bonus("NIGHT", "energy"); // paillasse
+        members.forEach((c) => c.changeEnergy(energy + nightBonus));
         if (card.food) {
             camp.add("food", card.food);
         }
@@ -415,9 +500,9 @@ class CampLife extends Challenge {
     }
     /** Le feu allumé de chaque équipe brûle le bois de la période (ou s'éteint). */
     burnFire(game, period) {
-        const burn = this.params.fireBurn[period];
+        const base = this.params.fireBurn[period];
         const player = game.getEntityByName("{player}");
-        if (!burn) {
+        if (!base) {
             return;
         }
         game.teams.forEach((team) => {
@@ -425,6 +510,8 @@ class CampLife extends Challenge {
             if (!camp.equipements.fire) {
                 return;
             }
+            // Le foyer en pierres réduit la consommation de bois de chaque période
+            const burn = Math.max(0, base + camp.bonus("FIRE", "burn"));
             const mine = team.color == player.team;
             if (camp.spend("wood", burn)) {
                 if (mine) {
@@ -520,12 +607,16 @@ class CampLife extends Challenge {
         if (kind != PeriodKind.TASK) {
             return DIRECT_CHOICES[kind];
         }
-        // Avec le kit de pêche, la récolte propose en plus le harpon (la pêche mène à un choix supplémentaire)
+        // Les options conditionnelles (`if`) du camp du joueur (ex: harpon avec le kit de pêche) sont retirées si non remplies
+        const node = TASK_TREE[this.node];
         const camp = this.game ? this.game.teamOf(this.game.getEntityByName("{player}")).camp : null;
-        if (this.node == "HARVEST" && camp && camp.equipements.fishingKit) {
-            return { ...TASK_TREE.HARVEST, right: { label: "Pêche (coquillages ou harpon)", node: "FISHING" } };
-        }
-        return TASK_TREE[this.node];
+        const filtered = { question: node.question };
+        DIRECTIONS.forEach((dir) => {
+            if (node[dir] && (!node[dir].if || !camp || node[dir].if(camp))) {
+                filtered[dir] = node[dir];
+            }
+        });
+        return filtered;
     }
 
     // --- Actions ---
@@ -534,12 +625,14 @@ class CampLife extends Challenge {
     availability(game, c, action) {
         const p = this.params;
         const camp = game.teamOf(c).camp;
-        if (action == Action.CABIN) {
-            if (camp.cabinDone) {
-                return { ok: false, reason: "La cabane est terminée." };
+        if (action == Action.BUILD) {
+            const id = camp.currentProject();
+            if (!id) {
+                return { ok: false, reason: "Tous les projets de construction sont terminés." };
             }
-            if (camp.resources.wood < p.cabinWood) {
-                return { ok: false, reason: "Pas assez de bois : chaque étape de la cabane demande " + p.cabinWood + " bois." };
+            const project = CAMP_PROJECTS[id];
+            if (camp.resources.wood < project.wood) {
+                return { ok: false, reason: "Pas assez de bois : chaque étape de « " + project.name + " » demande " + project.wood + " bois." };
             }
         }
         if (action == Action.HARPOON && !camp.equipements.fishingKit) {
@@ -577,6 +670,7 @@ class CampLife extends Challenge {
             action = Action.PAUSE;
         }
         this.actionCount[c.name]++;
+        this.round[c.name] = action;
         const taskCost = p.taskEnergy[action];
         if (taskCost !== undefined && PERIOD_KINDS[this.period] == PeriodKind.TASK) {
             c.changeEnergy(-taskCost);
@@ -608,7 +702,7 @@ class CampLife extends Challenge {
                         // Traîner au lit est mal vu par ceux qui sont déjà levés
                         earlier.forEach((o) => o.changeRelation(c.name, RelationGauge.REP, -p.wakeLateRep));
                     }
-                    return you ? "Vous vous levez tranquillement " + detail + " : " + (ok ? "personne ne vous en veut." : (earlier.length ? "traîner au lit est mal vu par ceux qui sont déjà debout." : "vous avez traîné, mais personne n'était encore debout.")) : "";
+                    return you ? "Vous vous levez tranquillement " + detail + " : " + (ok ? "personne ne lui en veut." : (earlier.length ? "traîner au lit est mal vu par ceux qui sont déjà debout." : "vous avez traîné, mais personne n'était encore debout.")) : "";
                 }
                 // Se lever directement : on croise au hasard un des lève-tôt
                 const partner = earlier.length ? pick(earlier) : null;
@@ -621,11 +715,11 @@ class CampLife extends Challenge {
                     game.applyEffect({ type: EffectType.RELATION, gauge: RelationGauge.AFF, target: c.name, about: partner.name, value: 1 });
                     camp.add("food", p.wakeRiseFood);
                     if (partner.isPlayer) {
-                        this.turnNotes.push(c.name + " et vous ramassez quelques racines ensemble (+" + p.wakeRiseFood + " nourriture).");
+                        this.turnNotes.push(c.name + " et " + mark(partner.name) + " ramassent quelques racines ensemble (+" + p.wakeRiseFood + " nourriture).");
                     }
                     return you ? "Vous vous levez directement " + detail + " : vous ramassez quelques racines avec " + partner.name + " (+" + p.wakeRiseFood + " nourriture)." : "";
                 }
-                return you ? "Vous vous levez directement " + detail + " : " + partner.name + " vous salue, sans plus." : "";
+                return you ? "Vous vous levez directement " + detail + " : " + partner.name + " salue " + mark(c.name) + ", sans plus." : "";
             }
             case Action.FEAST:
             case Action.RATION: {
@@ -633,7 +727,7 @@ class CampLife extends Challenge {
                 const cost = feast ? p.feastFood : p.rationFood;
                 const fed = camp.spend("food", cost);
                 if (fed) {
-                    c.changeEnergy(feast ? p.feastEnergy + (camp.equipements.fire ? p.feastFireBonus : 0) : p.rationEnergy);
+                    c.changeEnergy((feast ? p.feastEnergy + (camp.equipements.fire ? p.feastFireBonus : 0) : p.rationEnergy) + camp.bonus("MEAL", "energy"));
                     if (feast) {
                         game.applyEffect({ type: EffectType.RELATION, gauge: RelationGauge.AFF, target: "TEAM", about: c.name, value: 1 });
                     }
@@ -654,7 +748,7 @@ class CampLife extends Challenge {
                 const guide = camp.equipements.faunaGuide ? p.faunaGuideBonus : 0;
                 const roll = { ...rolled.roll, bonus: rolled.roll.bonus + guide, total: rolled.roll.total + guide };
                 const ok = roll.total >= p.fishThreshold;
-                const gain = camp.add("food", ok ? p.fishSuccessFood : p.fishFailFood);
+                const gain = camp.add("food", (ok ? p.fishSuccessFood : p.fishFailFood) + camp.bonus("FISH", "food"));
                 rep(ok ? 2 : -1, c.name + (ok ? " rapporte une belle pêche de coquillages" : " rapporte une pêche de coquillages décevante"));
                 return you ? "Pêche aux coquillages (" + this.rollToString("OBS", roll, p.fishThreshold) + ") : " + (ok ? "belle pêche" : "maigre pêche") + ", +" + gain + " nourriture." : "";
             }
@@ -662,7 +756,7 @@ class CampLife extends Challenge {
                 // Pêche au harpon (kit de pêche) : jet combiné difficile de SWI et d'OBS (guide local compris)
                 const guide = camp.equipements.faunaGuide ? p.faunaGuideBonus : 0;
                 const outcome = this.combinedRoll(c, "SWI", "OBS", p.harpoonThreshold, guide);
-                const gain = outcome.ok ? camp.add("food", p.harpoonSuccessFood) : 0;
+                const gain = outcome.ok ? camp.add("food", p.harpoonSuccessFood + camp.bonus("HARPOON", "food")) : 0;
                 rep(outcome.ok ? 3 : -1, c.name + (outcome.ok ? " rapporte un beau poisson harponné" : " rate sa pêche au harpon"));
                 return you ? "Pêche au harpon " + outcome.text + " : " + (outcome.ok ? "un beau poisson, +" + gain + " nourriture." : "le poisson file, rien rapporté.") : "";
             }
@@ -672,27 +766,55 @@ class CampLife extends Challenge {
                     return you ? cardLog(rolled) : "";
                 }
                 const ok = rolled.roll.total >= p.plantsThreshold;
-                const gain = camp.add("food", ok ? p.plantsSuccessFood : p.plantsFailFood);
+                const gain = camp.add("food", (ok ? p.plantsSuccessFood : p.plantsFailFood) + camp.bonus("PLANTS", "food"));
                 rep(ok ? 4 : -1, c.name + (ok ? " rapporte une récolte de plantes nourrissantes exceptionnelle" : " revient presque bredouille de la cueillette"));
                 return you ? "Cueillette (" + this.rollToString("INT", rolled.roll, p.plantsThreshold) + ") : " + (ok ? "vous trouvez des plantes nourrissantes en abondance" : "presque rien de comestible") + ", +" + gain + " nourriture." : "";
             }
             case Action.WATER:
             case Action.WOOD: {
+                if (action == Action.WATER && !camp.equipements.waterSource) {
+                    // La source d'eau doit être trouvée avant de pouvoir ravitailler : jet d'OBS très difficile (guide local compris)
+                    const guide = camp.equipements.faunaGuide ? p.faunaGuideBonus : 0;
+                    const roll = c.rollStat("OBS");
+                    const total = roll.total + guide;
+                    if (total < p.waterSourceThreshold) {
+                        return you ? "Vous cherchez une source d'eau (OBS " + total + " / " + p.waterSourceThreshold + ") : rien pour l'instant, la recherche doit continuer." : "";
+                    }
+                    camp.equipements.waterSource = true;
+                    const found = camp.add("water", p.waterSourceWater);
+                    rep(p.waterSourceRep, c.name + " trouve la source d'eau du camp");
+                    if (!you) {
+                        this.turnNotes.push(c.name + " a trouvé une source d'eau ! (+" + found + " eau)");
+                    }
+                    return you ? "Vous trouvez une source d'eau (OBS " + total + " / " + p.waterSourceThreshold + ") ! Premier ravitaillement : +" + found + " eau." : "";
+                }
                 const resource = action == Action.WATER ? "water" : "wood";
-                const gain = camp.add(resource, p.supplyAmount);
+                const amount = (action == Action.WATER ? p.waterAmount : p.woodAmount) + camp.bonus(action, resource);
+                const gain = camp.add(resource, amount);
                 if (gain > 0) {
                     rep(1);
                 }
-                return you ? (action == Action.WATER ? "Vous rapportez de l'eau" : "Vous rapportez du bois") + " (+" + gain + (gain < p.supplyAmount ? ", la réserve est pleine" : "") + ")." : "";
+                return you ? (action == Action.WATER ? "Vous rapportez de l'eau" : "Vous rapportez du bois") + " (+" + gain + (gain < amount ? ", la réserve est pleine" : "") + ")." : "";
             }
-            case Action.CABIN: {
-                camp.spend("wood", p.cabinWood);
-                camp.equipements.cabin++;
-                const done = camp.cabinDone;
-                // Une étape banale +1 REP ; la dernière, qui termine la cabane, est une activité utile (+3)
-                rep(done ? 3 : 1, done ? c.name + " pose la dernière planche : la cabane du camp est terminée" : undefined);
-                return you ? "Vous travaillez à la cabane (" + camp.equipements.cabin + "/" + CAMP_CABIN_STEPS + ", -" + p.cabinWood + " bois)" + (done ? " : elle est terminée !" : ".") : "";
+            case Action.BUILD: {
+                // Une étape du projet en cours : jet d'INT contre la difficulté du projet ; le bois n'est dépensé qu'en cas de réussite
+                const id = camp.currentProject();
+                const project = CAMP_PROJECTS[id];
+                const roll = c.rollStat("INT");
+                const ok = roll.total >= project.difficulty;
+                if (!ok) {
+                    return you ? "Vous peinez sur « " + project.name + " » (" + this.rollToString("INT", roll, project.difficulty) + ") : l'ouvrage n'avance pas." : "";
+                }
+                camp.spend("wood", project.wood);
+                const done = camp.advanceProject(id);
+                // Une étape banale +1 REP ; la dernière, qui termine le projet, est une activité utile (+3)
+                rep(done ? 3 : 1, done ? c.name + " termine le projet de construction du camp : " + project.name : undefined);
+                return you ? "Vous travaillez sur « " + project.name + " » (" + camp.projectSteps(id) + "/" + project.steps + ", -" + project.wood + " bois)"
+                    + (done ? " : terminé ! " + project.bonusText + "." : ".") : "";
             }
+            case Action.SWIM:
+                c.changeEnergy(p.swimEnergy + camp.bonus("SWIM", "energy"));
+                return you ? "Vous vous baignez dans la mer : +" + (p.swimEnergy + camp.bonus("SWIM", "energy")) + " énergie." : "";
             case Action.FIRE:
                 return this.tryFire(game, c);
             case Action.TALK: {
@@ -716,8 +838,8 @@ class CampLife extends Challenge {
                 return you ? "Vous discutez avec " + partner.name + " (" + this.rollToString("SOC", rolled.roll, p.talkThreshold) + ") : " + (ok ? "la conversation est agréable." : "la conversation tourne court.") : "";
             }
             case Action.PAUSE:
-                c.changeEnergy(p.pauseEnergy);
-                return you ? "Vous faites une pause et reprenez des forces." : "";
+                c.changeEnergy(p.pauseEnergy + camp.bonus("PAUSE", "energy"));
+                return you ? "Vous vous reposez et reprenez des forces." : "";
         }
         return "";
     }
@@ -760,7 +882,7 @@ class CampLife extends Challenge {
             return "Avec " + helpers.map((h) => h.name).join(" et ") + ", " + text.charAt(0).toLowerCase() + text.slice(1);
         }
         if (involved) {
-            this.turnNotes.push(c.name + " vous demande de l'aide pour allumer le feu. " + text);
+            this.turnNotes.push(c.name + " demande de l'aide à " + mark(involved.name) + " pour allumer le feu. " + text);
         }
         return "";
     }
@@ -810,7 +932,8 @@ class CampLife extends Challenge {
                     [Action.WATER]: r.water >= 20 ? 0 : (r.water < 10 ? 4 : 1),
                     [Action.WOOD]: r.wood < 6 ? 4 : 1,
                     [Action.FIRE]: this.availability(game, c, Action.FIRE).ok ? 1.5 : 0,
-                    [Action.CABIN]: this.availability(game, c, Action.CABIN).ok ? 2 : 0,
+                    [Action.BUILD]: this.availability(game, c, Action.BUILD).ok ? 2 : 0,
+                    [Action.SWIM]: c.energy < 35 ? 2.5 : 0.8,
                     [Action.TALK]: 1.5,
                     [Action.PAUSE]: c.energy < 25 ? 4 : 0.5
                 });
@@ -837,9 +960,12 @@ class CampLife extends Challenge {
         // Choix déjà faits par les coéquipiers pour cette action (ils jouent avant le joueur)
         const mates = this.teammateChoices(game, player);
         const choices = mates ? "\nChoix de l'équipe — " + mates : "";
-        game.vars.campPrompt = (this.log ? this.log + "\n" : "") + header + choices + "\n" + node.question + hint;
+        game.vars.campPrompt = (this.log ? game.personalize(this.log) + "\n" : "") + header + choices + "\n" + node.question + hint;
         game.vars.campLeft = label(node.left);
         game.vars.campRight = label(node.right);
+        // Haut / bas : vides quand le nœud n'a pas ces options (la carte ne propose alors pas ce sens de swipe)
+        game.vars.campUp = node.up ? label(node.up) : "";
+        game.vars.campDown = node.down ? label(node.down) : "";
         game.period = this.period;
     }
 }
