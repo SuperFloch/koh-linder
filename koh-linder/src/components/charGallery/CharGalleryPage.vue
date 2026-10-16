@@ -126,10 +126,10 @@ export default defineComponent({
     border-radius: 50%;
     font-size: 2.2rem;
     font-weight: 900;
-    color: var(--sand);
-    background-color: var(--sea);
+    color: var(--sand-soft);
+    background-color: var(--wood-dark);
     box-sizing: border-box;
-    border: 5px solid var(--wood);
+    border: 5px solid var(--wood-light);
 }
 .face.big {
     width: 96px;
@@ -148,13 +148,14 @@ export default defineComponent({
     border-color: #ffc83d;
 }
 .name {
+    font-family: var(--font-display);
     font-size: 1.2rem;
-    font-weight: 900;
+    font-weight: 400;
 }
 .status {
     margin-top: 8px;
     font-weight: 900;
-    color: var(--jungle);
+    color: var(--jungle-soft);
 }
 .unlockBtn {
     width: 100%;
@@ -191,8 +192,9 @@ export default defineComponent({
     text-align: center;
 }
 .modalName {
+    font-family: var(--font-display);
     font-size: 1.8rem;
-    font-weight: 900;
+    font-weight: 400;
 }
 .infos {
     margin: 4px 0 10px;
@@ -219,13 +221,13 @@ export default defineComponent({
     flex: 1;
     height: 10px;
     border-radius: 5px;
-    background-color: var(--wood);
+    background-color: var(--wood-light);
     overflow: hidden;
 }
 .attrFill {
     display: block;
     height: 100%;
-    background-color: var(--sky);
+    background-color: var(--amber);
 }
 .attrValue {
     width: 1.5em;

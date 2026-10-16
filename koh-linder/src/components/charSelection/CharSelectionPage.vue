@@ -257,13 +257,14 @@ export default defineComponent({
     border-radius: 50%;
     font-size: 3rem;
     font-weight: 900;
-    color: var(--sand);
-    background-color: var(--sea);
-    border: 4px solid var(--wood);
+    color: var(--sand-soft);
+    background-color: var(--wood-dark);
+    border: 4px solid var(--wood-light);
 }
 .name {
+    font-family: var(--font-display);
     font-size: 1.6rem;
-    font-weight: 900;
+    font-weight: 400;
 }
 .infos {
     margin: 4px 0 14px;
@@ -279,7 +280,7 @@ export default defineComponent({
 }
 .toggle.active {
     opacity: 1;
-    background-color: var(--sky);
+    background-color: var(--amber);
 }
 .randRow {
     display: flex;
@@ -313,13 +314,13 @@ export default defineComponent({
     flex: 1;
     height: 12px;
     border-radius: 6px;
-    background-color: var(--wood);
+    background-color: var(--wood-light);
     overflow: hidden;
 }
 .attrFill {
     display: block;
     height: 100%;
-    background-color: var(--sky);
+    background-color: var(--amber);
 }
 .attrValue {
     width: 1.5em;

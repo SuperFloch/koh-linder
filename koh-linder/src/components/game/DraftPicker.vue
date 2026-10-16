@@ -60,11 +60,11 @@ export default defineComponent({
 </script>
 <style scoped>
 .picker {
-    margin: 8px 8px 0;
     padding: 6px;
-    border: 3px solid var(--sand);
+    border: 2px solid var(--wood-dark);
     border-radius: 10px;
-    background-color: var(--sea);
+    background-color: var(--wood-light);
+    box-shadow: 0 4px 0 var(--wood-dark);
 }
 .portraits {
     display: flex;
@@ -78,7 +78,7 @@ export default defineComponent({
     padding: 2px 0;
     text-align: center;
     cursor: default;
-    color: var(--sand);
+    color: var(--sand-soft);
     background: transparent;
     border: 3px solid transparent;
     border-radius: 10px;
@@ -92,8 +92,8 @@ export default defineComponent({
     opacity: 1;
 }
 .portrait.selected {
-    background-color: rgba(250, 231, 157, 0.35);
-    box-shadow: 0 0 0 3px var(--sand);
+    background-color: rgba(245, 185, 66, 0.3);
+    box-shadow: 0 0 0 3px var(--amber);
 }
 .face {
     display: block;
@@ -104,8 +104,8 @@ export default defineComponent({
     border-radius: 50%;
     font-size: 0.95rem;
     font-weight: 900;
-    color: var(--wood);
-    background-color: var(--sky);
+    color: var(--wood-dark);
+    background-color: var(--sand-soft);
 }
 .label {
     display: block;

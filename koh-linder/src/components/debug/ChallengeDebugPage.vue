@@ -70,14 +70,14 @@ export default defineComponent({
     font-size: 0.75rem;
     font-weight: 900;
     border-radius: 10px;
-    border: 2px solid var(--wood);
-    color: var(--sand);
+    border: 2px solid var(--wood-light);
+    color: var(--sand-soft);
 }
 .context.team {
-    background-color: var(--sea);
+    background-color: var(--wood-dark);
 }
 .context.solo {
-    background-color: var(--jungle);
+    background-color: var(--jungle-soft);
 }
 .description {
     margin: 6px 0;

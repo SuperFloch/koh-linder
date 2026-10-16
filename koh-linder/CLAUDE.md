@@ -215,6 +215,14 @@ Bienvenue de Denis Brognard dans `{region}` → « 20 nouveaux candidats » → 
 - Electron est entièrement retiré.
 
 ## Charte graphique (UI)
+**Design de référence : « C · Braise Planche », dans `Maquette/`** (`README.md` = règles et palette, `PlancheEpreuve.dc.html` / `PlancheCamp.dc.html` = maquettes 390 × 844). Toute nouvelle UI doit le suivre :
+- En partie, **le centre de l'écran est TOUJOURS une carte** ; jamais de barre d'outils ni d'élément d'UI sur les côtés (tout en haut ou en bas).
+- **Header en planche de bois** (`GameTopBar`) : jour + période à gauche, **médaillon / avatar du joueur au centre** (déborde sous le header, anneau de la couleur d'équipe ; le toucher ouvre la liste des candidats), **jauge d'énergie** + équipe à droite. Sous le header (`.hud`, marge pour le médaillon) : **minimap d'épreuve en bois et sable** (`RaceTrack`, titre = nom du catalogue) ou **bandeau sable du camp** (`CampHeader` : eau / bois / vivres / feu, cabane en 15 segments, ruban des périodes).
+- **Arrière-plan** : paysage tropical dessiné (`TropicalScene.vue`, teintes dans `game/scene.js`) : plage au ciel **toujours bleu clair** pendant les épreuves et l'intro ; plage + jungle + cabane au camp, **ciel selon la période**.
+- **Carte** : cadre bois autour d'une carte sable, **illustration en haut** (`CardIllustration.vue` : `img` de la carte, sinon scène dessinée — bateau pour le thème INTRODUCTION, plage pour les épreuves, camp ; réduite sur les cartes `CHALLENGE_TURN`), titre en **Lilita One**, texte en **Rubik** (Google Fonts dans `index.html`).
+- **Choix** : deux boutons toujours visibles sous la carte (gauche `--jungle-soft`, droite `--sea-soft`, un seul bouton sable si ce n'est pas une décision) ; toucher = swiper ; le bouton du côté swipé se met en avant.
+- Palette **Braise** (dérivée de la charte, saturation ajustée) : `--wood-dark` #1a100d, `--wood-light` #4a2c1d, `--wood-mid` #6b4129, `--sand-soft` #e8d49a, `--sand-deep` #c9ae6e, `--amber` #f5b942 (accent unique), `--jungle-soft` #2f5a26, `--sea-soft` #1d3f63, `--team-red-soft` / `--team-yellow-soft`. Les couleurs ci-dessous restent la référence d'origine.
+
 Univers **tropical / tiki** : mer, sable, jungle, bois et flammes. Toute nouvelle UI doit utiliser ces couleurs (variables Sass dans `src/css/quasar.variables.scss`, variables CSS `--sand`… dans `src/css/app.scss`).
 
 | Nom | Hex | Variable CSS | Rôle |
@@ -227,7 +235,7 @@ Univers **tropical / tiki** : mer, sable, jungle, bois et flammes. Toute nouvell
 | Équipe jaune | `#ffe030` | `--team-yellow` | uniquement pour l'équipe jaune (classe `.team-yellow`) ; `warning` Quasar |
 | Équipe rouge | `#ff4930` | `--team-red` | uniquement pour l'équipe rouge (classe `.team-red`) ; `negative` Quasar |
 
-Règles : fond d'écran = dégradé mer → brun (`.screen`) ; boutons = classe `.tiki-btn` (sable plein, bordure et ombre brun, `.secondary` en jungle/sable, `.small` pour les flèches) pour bien les détacher du fond ; panneaux/cartes = `.tiki-panel` (sable, texte brun, bordure brune). Les couleurs d'équipe ne servent qu'à identifier les équipes. Les pages Menu et CharSelection sont centrées (flex). Le menu contient un lien vers l'éditeur (`/editor`).
+Règles : fond des écrans hors partie = ciel du soir → mer de nuit → bois (`.screen`) ; boutons = classe `.tiki-btn` (sable, bordure et ombre bois sombre, survol ambre ; `.secondary` en planche de bois ; `.small` pour les flèches) ; panneaux = `.tiki-panel` (sable dans un cadre de bois) ; titres = `.display-font` (Lilita One). Les couleurs d'équipe ne servent qu'à identifier les équipes. Les pages Menu et CharSelection sont centrées (flex). Le menu contient un lien vers l'éditeur (`/editor`).
 
 ### Épreuves (`src/model/challenges/`)
 **Toute implémentation d'épreuve va dans `src/model/challenges/`.** Rien de spécifique à une épreuve ne doit être dans `Game.js` ni `Effect.js`.
@@ -284,11 +292,12 @@ Pendant une épreuve, chaque candidat a un **score d'avancement**, affiché ou n
 - Attention : le seuil du plongeon est dupliqué entre `dice.threshold` de `swim_01_saut` et `diveThreshold` (à garder identiques).
 
 ### Écran de jeu (`InGamePage`)
-- Les cartes ont le **ratio d'une carte à jouer 63 × 89** (`aspect-ratio`), dimensionnées au maximum dans la zone de jeu (largeur ≤ 520 px).
+- Mise en page : voir « Charte graphique » (design C, `Maquette/`).
+- Les cartes ont le **ratio d'une carte à jouer 63 × 89** (`aspect-ratio`), dimensionnées au maximum dans la zone de jeu (largeur ≤ 520 px ; `.cardArea` est un conteneur de taille, `container-type: size`).
 - **Symbole du swipe en bas de chaque carte** : flèche biface horizontale (↔) quand le swipe n'est pas une décision, deux flèches séparées (← couleur jungle, → couleur mer, celles des textes de choix) quand c'en est une. Est une décision toute carte dont les textes de choix gauche et droite (formatés) diffèrent (`InGamePage.isDecision`) ; « Suivant / Suivant », les tours d'épreuve à textes identiques, etc. n'en sont pas.
 - **Bande de validation** : quand le swipe est assez avancé pour passer à la carte suivante (déplacement > 200 px, `commitSide`), une **bande verticale de 14 px collée au bord de l'écran** (côté du swipe) apparaît, de la couleur du choix (gauche jungle, droite mer) ou **blanche** quand le swipe n'est pas une décision.
-- Le texte du choix (gauche/droite) s'affiche **sous la carte**, dans une zone de hauteur fixe, dès le début du swipe (gauche = fond jungle, droite = fond mer).
-- Le header (`GameTopBar`) affiche jour, équipe (« Sans équipe » au départ), énergie du joueur, et un bouton qui ouvre `CandidateListModal` : liste compacte de tous les candidats (avatar, nom, métier, âge), **triée selon les relations du joueur** (voir « Décisions ») ; bordure d'avatar de la couleur d'équipe (`TeamCssColor`) uniquement si le candidat a une équipe ; éliminés grisés. Aucune jauge AFF/REP affichée.
+- Les textes des choix (gauche/droite) sont des **boutons toujours visibles sous la carte** (gauche jungle, droite mer) ; toucher un bouton = swiper ; pendant le swipe, le bouton du côté visé se met en avant.
+- Le header (`GameTopBar`) affiche jour, période, équipe (« Sans équipe » au départ), jauge d'énergie du joueur, et le médaillon du joueur qui ouvre `CandidateListModal` : liste compacte de tous les candidats (avatar, nom, métier, âge), **triée selon les relations du joueur** (voir « Décisions ») ; bordure d'avatar de la couleur d'équipe (`TeamCssColor`) uniquement si le candidat a une équipe ; éliminés grisés. Aucune jauge AFF/REP affichée.
 
 ## Architecture du code (état actuel, WIP)
 - `src/model/` : `Character.js` (Character, Candidate, Attribute), `CandidateGenerator.js` (casting + quotas d'âge), `Card.js` (CardType NARRATION/DICE/PORTRAITS/CHALLENGE_TURN), `challenges/` (épreuves, voir ci-dessus), `Game.js` (`new Game(content, playerCharacter)`, `next()`, `getNextCard()`, `applyEffect()`, `rollDice()`, `format()`), `Effect.js`, `Team.js`, `Condition.js`, `GameHistory.js`, `Decision.js`.

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planche — épreuve des flambeaux</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Rubik:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#f5b942}a:hover{color:#e8d49a}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; font-family: 'Rubik', sans-serif; color: #e8d49a; background: {{sky}}">
+
+<!-- Paysage : plage tropicale (épreuve) -->
+<svg aria-hidden="true" style="position: absolute; inset: 0" width="390" height="844" viewBox="0 0 390 844" preserveAspectRatio="none">
+<rect x="0" y="0" width="390" height="844" fill="{{sky}}"></rect>
+<circle cx="300" cy="190" r="42" fill="#fff4cf" opacity="0.85"></circle>
+<path d="M0 470h390v120H0z" fill="#3a9fc0"></path>
+<path d="M0 470h390v10H0z" fill="#8fd6e6" opacity="0.7"></path>
+<path d="M0 520c60-8 120-8 180 0s130 8 210 0v20c-80 8-150 8-210 0S60 532 0 540z" fill="#6cc2da" opacity="0.6"></path>
+<path d="M0 590c80-22 200-26 390-6v260H0z" fill="#e8d49a"></path>
+<path d="M0 640c90-12 220-12 390 0v204H0z" fill="#dcc283"></path>
+<g fill="none" stroke="#2a1a12" stroke-width="7" stroke-linecap="round"><path d="M40 760c6-60 0-120-14-180"></path><path d="M356 780c-4-70 4-130 18-190"></path></g>
+<g fill="#2f5a26"><path d="M26 580c-30-6-52 6-62 24 22-14 44-16 62-24z"></path><path d="M26 580c20-24 46-30 70-22-26 2-48 12-70 22z"></path><path d="M26 580c-8-26-30-40-54-40 22 10 40 22 54 40z"></path><path d="M26 580c26-4 48 10 58 30-20-14-38-22-58-30z"></path><path d="M374 590c-22-22-50-26-72-14 26 0 50 6 72 14z"></path><path d="M374 590c12-26 36-38 60-32-24 6-44 18-60 32z"></path><path d="M374 590c-28 2-48 18-54 40 16-20 34-32 54-40z"></path></g>
+</svg>
+
+<div style="position: relative; height: 100%; display: flex; flex-direction: column">
+
+<!-- Header : planche de bois, avatar au centre -->
+<div style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr); align-items: center; gap: 10px; padding: 12px 16px; background: #4a2c1d; border-bottom: 3px solid #1a100d; box-shadow: inset 0 -2px 0 #6b4129">
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-family: 'Lilita One', sans-serif; font-size: 22px; line-height: 1">Jour 6</span>
+<span style="font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #f5b942">Confort · Matin</span>
+</div>
+<button aria-label="Votre fiche et la liste des candidats" style="justify-self: center; width: 72px; height: 72px; margin-bottom: -34px; border-radius: 50%; border: 4px solid #e8d49a; background: #1a100d; box-shadow: 0 0 0 3px #1a100d, 0 6px 14px #0b1a28; color: #e8d49a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; font-family: 'Lilita One', sans-serif; font-size: 26px; line-height: 1; position: relative; z-index: 2">L<span style="font-family: 'Rubik', sans-serif; font-size: 8px; letter-spacing: 1px">[AVATAR]</span></button>
+<div style="display: flex; flex-direction: column; gap: 5px; align-items: stretch; min-width: 0">
+<div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700"><span>Énergie</span><span>{{energy}}</span></div>
+<div role="img" aria-label="Énergie {{energy}} sur 100" style="height: 12px; border-radius: 6px; background: #1a100d; border: 2px solid #6b4129; overflow: hidden"><div style="height: 100%; width: {{energyPct}}; background: #f5b942"></div></div>
+</div>
+</div>
+
+<!-- Minimap : planche et cases de sable -->
+<div style="display: flex; flex-direction: column; gap: 6px; margin: 44px 16px 0; padding: 8px 10px; border-radius: 10px; background: #4a2c1d; border: 2px solid #1a100d">
+<div style="display: flex; align-items: center; font-size: 11px; font-weight: 700">
+<span style="font-family: 'Lilita One', sans-serif; font-size: 15px">Les Flambeaux</span>
+<span style="margin-left: auto; display: flex; align-items: center; gap: 5px"><span style="width: 9px; height: 9px; border-radius: 50%; background: #e0553f; border: 1.5px solid #e8d49a"></span>Rouges · Matagi</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(18, minmax(0, 1fr)); gap: 2px">
+<sc-for list="{{cells}}" as="cell" hint-placeholder-count="18">
+<div style="height: 18px; border-radius: 3px; background: {{cell.bg}}; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{cell.mark}}" hint-placeholder-val="{{false}}"><div style="width: 10px; height: 10px; border-radius: 50%; background: {{cell.markColor}}; border: 2px solid #1a100d"></div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+
+<!-- Carte : toujours au centre -->
+<div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0">
+<div style="position: relative; width: 296px; height: 418px; box-sizing: border-box; padding: 8px; border-radius: 14px; background: #4a2c1d; border: 2px solid #1a100d; box-shadow: 0 16px 30px rgba(26,16,13,.45); transform: rotate(-2deg)">
+<div style="height: 100%; box-sizing: border-box; border-radius: 8px; background: #e8d49a; color: #1a100d; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 150px; flex: none; background: #8fd3e8; position: relative; overflow: hidden">
+<svg aria-hidden="true" style="position: absolute; inset: 0" width="276" height="150" viewBox="0 0 276 150" preserveAspectRatio="xMidYMid slice"><rect width="276" height="150" fill="#8fd3e8"></rect><path d="M0 110h276v40H0z" fill="#e8d49a"></path><path d="M0 100h276v12H0z" fill="#3a9fc0"></path><path d="M138 150V40" stroke="#4a2c1d" stroke-width="6"></path><path d="M118 40h40l-6 10h-28z" fill="#4a2c1d"></path><path d="M138 10c10 10 11 18 5 28h-10c-6-10-5-18 5-28z" fill="#f5b942"></path><circle cx="128" cy="90" r="6" fill="#e0553f"></circle><path d="M128 96v14" stroke="#1a100d" stroke-width="3"></path></svg>
+<span style="position: absolute; left: 8px; bottom: 6px; font-size: 9px; color: #4a2c1d">[Illustration]</span>
+</div>
+<div style="padding: 10px 14px 0; display: flex; align-items: baseline; justify-content: space-between">
+<span style="font-family: 'Lilita One', sans-serif; font-size: 21px; line-height: 1.1">Le mât</span>
+<span style="font-size: 10px; letter-spacing: 1.5px; color: #6b4129">CASE 17/18</span>
+</div>
+<div style="padding: 4px 14px 0; font-size: 13.5px; line-height: 1.42">Le flambeau brûle. Quelqu'un doit grimper et embraser la vasque.</div>
+<div style="display: flex; flex-direction: column; gap: 5px; padding: 8px 10px 0">
+<div style="border: 2px solid #b8402c; background: #f2dfb0; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; line-height: 1.35"><b>Rouges</b> — Obstacle franchi, tous au pied du mât.</div>
+<div style="border: 1.5px solid #a88f1c; background: #efe0b4; border-radius: 6px; padding: 4px 8px; font-size: 10.5px; line-height: 1.35; color: #3a2a1a"><b>Jaunes</b> — Kevin glisse et retombe.</div>
+</div>
+<div style="margin-top: auto; display: flex; justify-content: center; padding: 8px 0 10px">
+<svg role="img" aria-label="Décision : glisser à gauche ou à droite" width="64" height="18" viewBox="0 0 64 18" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M26 9H4m6-6-6 6 6 6" stroke="#2f5a26"></path><path d="M38 9h22m-6-6 6 6-6 6" stroke="#1d3f63"></path></svg>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Choix sous la carte -->
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 16px 22px">
+<button style="min-height: 56px; border-radius: 10px; border: 2px solid #1a100d; background: #2f5a26; color: #f2e6bf; font-family: 'Rubik', sans-serif; font-size: 14px; font-weight: 700; box-shadow: 0 4px 0 #1a100d; display: flex; align-items: center; gap: 8px; padding: 0 12px">
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6"></path></svg>
+<span>Je grimpe moi-même</span>
+</button>
+<button style="min-height: 56px; border-radius: 10px; border: 2px solid #1a100d; background: #1d3f63; color: #f2e6bf; font-family: 'Rubik', sans-serif; font-size: 14px; font-weight: 700; box-shadow: 0 4px 0 #1a100d; display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 0 12px">
+<span>Laisser Maëlle</span>
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"energy":{"editor":"range","default":42,"min":0,"max":100,"step":1},"sky":{"editor":"color","default":"#8fd3e8","options":["#8fd3e8","#6cc4ea","#a7dcea"]},"redCell":{"editor":"int","default":16,"min":0,"max":17},"yellowCell":{"editor":"int","default":13,"min":0,"max":17},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const energy = this.props.energy ?? 42;
+const red = this.props.redCell ?? 16;
+const yellow = this.props.yellowCell ?? 13;
+const cells = [];
+for (let i = 0; i < 18; i++) {
+const special = i === 8 || i === 17;
+let mark = false;
+let markColor = '';
+if (i === yellow) { mark = true; markColor = '#e8c93a'; }
+if (i === red) { mark = true; markColor = '#e0553f'; }
+cells.push({ bg: special ? '#f5b942' : (i <= red ? '#c9ae6e' : '#e8d49a'), mark: mark, markColor: markColor });
+}
+return { energy: energy, energyPct: energy + '%', sky: this.props.sky ?? '#8fd3e8', cells: cells };
+}
+}
+</script>
+</body>
+</html>

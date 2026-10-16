@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "quasar-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["quasar", "dev", "--port", "9000"],
+      "port": 9000
+    }
+  ]
+}

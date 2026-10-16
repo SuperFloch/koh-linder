@@ -1,50 +1,72 @@
 <template>
-    <div class="stretch gamePage" :class="{ withTrack: showTrack, withDraft: showDraft, withCamp: showCamp }">
+    <!-- Design « Braise · Planche » (Maquette/) : paysage en fond, header bois, bandeau, carte au centre, choix en bas -->
+    <div class="stretch gamePage">
+        <TropicalScene :variant="sceneVariant" :period="game.period" />
         <GameTopBar :game="game"/>
-        <!-- Second header, hors épreuves : ressources du camp -->
-        <CampHeader v-if="showCamp" :game="game" />
-        <!-- Score d'avancement de l'épreuve en cours (minimap) -->
-        <RaceTrack v-if="showTrack" :challenge="game.activeChallenge" :candidates="game.candidates" />
-        <!-- Portraits cliquables pendant la formation des équipes -->
-        <DraftPicker v-if="showDraft" :game="game" :challenge="game.activeChallenge" />
+        <!-- Sous le header (laisse la place au médaillon du joueur) : bandeau du camp, minimap d'épreuve ou portraits -->
+        <div class="hud">
+            <CampHeader v-if="showCamp" :game="game" />
+            <RaceTrack v-if="showTrack" :challenge="game.activeChallenge" :candidates="game.candidates" :title="challengeTitle" />
+            <DraftPicker v-if="showDraft" :game="game" :challenge="game.activeChallenge" />
+        </div>
         <!-- Bouton de consultation du journal (débogage, voir src/debug.js) -->
         <DebugJournal v-if="debug" :game="game" />
-        <div class="swipeListener" ref="swipe">
+        <div class="swipeListener" :class="{ withDebug: debug }" ref="swipe">
           <div class="cardArea">
-            <div class="currentCard tiki-panel" ref="currentCard" v-if="card">
-                <div class="cardName">{{ game.format(card.name) }}</div>
-                <div v-if="card.type == 'PORTRAITS' && portrait" class="portrait">
-                    <div class="portraitFace">{{ portrait.name.charAt(0) }}</div>
-                    <div class="portraitName">{{ portrait.name }}</div>
-                    <div>{{ portrait.job }}, {{ portrait.age }} ans</div>
-                    <div class="portraitCount">{{ portraitIndex + 1 }} / {{ game.candidates.length }}</div>
+            <div class="currentCard" ref="currentCard" v-if="card">
+              <div class="cardInner">
+                <CardIllustration v-if="hasIllustration" :class="{ compact: card.type == 'CHALLENGE_TURN' }" :img="card.img"
+                    :variant="illustrationVariant" :period="game.period" />
+                <div class="cardBody" :class="{ centered: card.type == 'PORTRAITS' }">
+                    <div class="cardName display-font">{{ game.format(card.name) }}</div>
+                    <div v-if="card.type == 'PORTRAITS' && portrait" class="portrait">
+                        <div class="portraitFace display-font">{{ portrait.name.charAt(0) }}</div>
+                        <div class="portraitName display-font">{{ portrait.name }}</div>
+                        <div>{{ portrait.job }}, {{ portrait.age }} ans</div>
+                        <div class="portraitCount">{{ portraitIndex + 1 }} / {{ game.candidates.length }}</div>
+                    </div>
+                    <div class="cardText">{{ cardText }}</div>
+                    <!-- Épreuves d'équipe : un bloc par équipe, bordure de sa couleur, police réduite pour l'équipe adverse -->
+                    <template v-if="hasSections">
+                        <div v-for="s in game.logSections" :key="s.color" class="teamSection" :class="{ rival: !s.mine }"
+                            :style="{ borderColor: teamCss(s.color) }">{{ s.text }}</div>
+                    </template>
                 </div>
-                <!-- Épreuves d'équipe : un bloc par équipe, bordure de sa couleur, police réduite pour l'équipe adverse -->
-                <template v-if="card.type == 'CHALLENGE_TURN' && game.logSections && game.logSections.length">
-                    <div v-for="s in game.logSections" :key="s.color" class="teamSection" :class="{ rival: !s.mine }"
-                        :style="{ borderColor: teamCss(s.color) }">{{ s.text }}</div>
-                </template>
-                <div class="cardText">{{ cardText }}</div>
                 <!-- Nature du swipe : flèche biface = pas de décision ; deux flèches colorées = décision -->
                 <div class="swipeSymbol">
                     <span v-if="isDecision" class="arrow decisionLeft" title="Décision">&#8592;</span>
                     <span v-if="isDecision" class="arrow decisionRight" title="Décision">&#8594;</span>
                     <span v-else class="arrow neutral" title="Pas de décision">&#8596;</span>
                 </div>
+              </div>
             </div>
-            <div class="currentCard tiki-panel" v-else-if="game.finished">
-                <div class="cardName">Fin de la partie</div>
-                <div class="cardText">Fin du contenu disponible pour le moment.<br>Jours survécus : {{ game.kohPointsEarned }}</div>
-                <button v-if="game.debug" class="tiki-btn" @click="$emit('end')">Terminer (débogage)</button>
-                <button v-else class="tiki-btn" @click="$emit('end')">Récupérer {{ game.kohPointsEarned }} Koh-point{{ game.kohPointsEarned > 1 ? 's' : '' }}</button>
+            <div class="currentCard" v-else-if="game.finished">
+              <div class="cardInner">
+                <CardIllustration :variant="sceneVariant" :period="game.period" />
+                <div class="cardBody centered">
+                    <div class="cardName display-font">Fin de la partie</div>
+                    <div class="cardText">Fin du contenu disponible pour le moment.<br>Jours survécus : {{ game.kohPointsEarned }}</div>
+                    <button v-if="game.debug" class="tiki-btn" @click="$emit('end')">Terminer (débogage)</button>
+                    <button v-else class="tiki-btn" @click="$emit('end')">Récupérer {{ game.kohPointsEarned }} Koh-point{{ game.kohPointsEarned > 1 ? 's' : '' }}</button>
+                </div>
+              </div>
             </div>
           </div>
           <!-- Bande verticale collée au bord de l'écran, quand le swipe est assez avancé pour valider le choix : couleur du choix, blanche si ce n'est pas une décision -->
           <div v-if="card && commitSide" class="commitBand" :class="[commitSide, isDecision ? commitSide + 'Color' : 'neutralColor']"></div>
-          <!-- Texte du choix, affiché sous la carte dès que le swipe commence -->
+          <!-- Choix sous la carte, toujours visibles : toucher un bouton = swiper de ce côté -->
           <div class="choiceZone">
-              <div class="choiceText leftHint" v-if="card && slidingLeft">{{ game.format(card.choices.left.text) }}</div>
-              <div class="choiceText rightHint" v-else-if="card && slidingRight">{{ game.format(card.choices.right.text) }}</div>
+              <template v-if="card && isDecision">
+                  <button class="choiceBtn left" :class="{ active: slidingLeft }" @click="choose('left')">
+                      <span class="choiceArrow" aria-hidden="true">&#8592;</span><span>{{ game.format(card.choices.left.text) }}</span>
+                  </button>
+                  <button class="choiceBtn right" :class="{ active: slidingRight }" @click="choose('right')">
+                      <span>{{ game.format(card.choices.right.text) }}</span><span class="choiceArrow" aria-hidden="true">&#8594;</span>
+                  </button>
+              </template>
+              <button v-else-if="card" class="choiceBtn neutral" :class="{ active: slidingLeft || slidingRight }" @click="choose('right')">
+                  <span>{{ game.format(card.choices.right.text) || 'Continuer' }}</span><span class="choiceArrow" aria-hidden="true">&#8596;</span>
+              </button>
           </div>
         </div>
     </div>
@@ -58,6 +80,8 @@ import RaceTrack from './RaceTrack.vue';
 import DraftPicker from './DraftPicker.vue';
 import DebugJournal from './DebugJournal.vue';
 import CampHeader from './CampHeader.vue';
+import TropicalScene from './TropicalScene.vue';
+import CardIllustration from './CardIllustration.vue';
 import { TeamCssColor } from 'src/model/Team';
 import { DEBUG } from 'src/debug';
 
@@ -76,7 +100,9 @@ export default defineComponent({
         RaceTrack,
         DraftPicker,
         DebugJournal,
-        CampHeader
+        CampHeader,
+        TropicalScene,
+        CardIllustration
     },
     data: function(){
         return {
@@ -106,6 +132,32 @@ export default defineComponent({
         showCamp(){
             return !!this.game.challenges.CAMP_LIFE && !this.game.activeChallenge;
         },
+        // Paysage de fond : plage pendant les épreuves (ciel bleu clair), plage + jungle au camp (ciel selon la période)
+        sceneVariant(){
+            return this.showCamp ? 'camp' : 'beach';
+        },
+        // Illustration par défaut d'une carte sans `img` : bateau pendant l'introduction, sinon la scène du moment
+        illustrationVariant(){
+            if(this.card && this.card.theme == 'INTRODUCTION'){
+                return 'sea';
+            }
+            return this.sceneVariant;
+        },
+        hasIllustration(){
+            return !!this.card && this.card.type != 'PORTRAITS';
+        },
+        hasSections(){
+            return !!this.card && this.card.type == 'CHALLENGE_TURN' && !!this.game.logSections && this.game.logSections.length > 0;
+        },
+        // Nom de l'épreuve en cours, d'après le catalogue (manifest.challenges)
+        challengeTitle(){
+            const challenge = this.game.activeChallenge;
+            if(!challenge){
+                return '';
+            }
+            const entry = (this.game.content.challenges || []).find((c) => c.id == challenge.id);
+            return entry ? entry.name : '';
+        },
         portrait(){
             return this.game.candidates[this.portraitIndex];
         },
@@ -126,6 +178,14 @@ export default defineComponent({
     methods:{
         teamCss(color){
             return TeamCssColor[color] || 'var(--wood)';
+        },
+        // Bouton de choix : même effet qu'un swipe complet de ce côté
+        choose(side){
+            if(side == 'left'){
+                this.game.left();
+            } else {
+                this.game.right();
+            }
         }
     },
     watch:{
@@ -191,85 +251,146 @@ export default defineComponent({
 </script>
 <style scoped>
 .gamePage{
-    /* Hauteur réservée hors carte (barre du haut, zone du texte de choix, marges) ; la minimap en ajoute */
-    --reserved: 210px;
+    position: relative;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(180deg, var(--sea) 0%, var(--wood) 100%);
+    overflow: hidden;
+    background-color: var(--wood-dark);
 }
-.withTrack{
-    --reserved: 315px;
-}
-.withDraft{
-    --reserved: 330px;
-}
-.withCamp{
-    --reserved: 250px;
+/* Sous le header : la marge haute laisse la place au médaillon du joueur qui déborde */
+.hud{
+    position: relative;
+    flex: none;
+    padding: 46px 16px 0;
 }
 .swipeListener{
+    position: relative;
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 12px 16px;
+    padding: 12px 16px 16px;
     overflow: hidden;
     touch-action: none;
 }
+/* Place pour le bouton du journal de débogage, sous les choix */
+.swipeListener.withDebug{
+    padding-bottom: 26px;
+}
+/* Conteneur de taille : la carte prend la plus grande taille possible au format 63 x 89 */
 .cardArea{
     flex: 1;
     min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    container-type: size;
 }
-/* Carte à jouer au format 63 x 89, la plus grande possible dans la zone de jeu */
+/* Carte à jouer au format 63 x 89 : cadre de bois autour d'une carte sable */
 .currentCard{
     position: relative;
     box-sizing: border-box;
-    width: min(100%, calc((100vh - var(--reserved)) * 63 / 89), 520px);
+    width: min(100cqw, 100cqh * 63 / 89, 520px);
     aspect-ratio: 63 / 89;
-    padding: 24px 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 16px;
-    overflow: hidden;
+    padding: 8px;
+    border-radius: 14px;
+    background-color: var(--wood-light);
+    border: 2px solid var(--wood-dark);
+    box-shadow: 0 16px 30px rgba(26, 16, 13, 0.45);
     user-select: none;
 }
-/* Zone sous la carte réservée au texte du choix (hauteur fixe pour éviter les sauts de mise en page) */
+.cardInner{
+    position: relative;
+    height: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background-color: var(--sand-soft);
+    color: var(--wood-dark);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.illustration.compact{
+    height: 22%;
+}
+.cardBody{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px 34px;
+    overflow-y: auto;
+    text-align: left;
+}
+.cardBody.centered{
+    justify-content: center;
+    text-align: center;
+}
+/* Zone des choix sous la carte (hauteur fixe pour éviter les sauts de mise en page) */
 .choiceZone{
     flex: none;
-    height: 72px;
+    min-height: 58px;
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+}
+.choiceBtn{
+    flex: 1;
+    min-width: 0;
+    min-height: 58px;
     display: flex;
     align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: left;
+    color: var(--cream);
+    border: 2px solid var(--wood-dark);
+    border-radius: 10px;
+    box-shadow: 0 4px 0 var(--wood-dark);
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+.choiceBtn.left{
+    background-color: var(--jungle-soft);
+}
+.choiceBtn.right{
+    justify-content: flex-end;
+    text-align: right;
+    background-color: var(--sea-soft);
+}
+.choiceBtn.neutral{
     justify-content: center;
-}
-.choiceText{
-    max-width: 100%;
-    padding: 10px 22px;
-    font-size: 1.3rem;
-    font-weight: 900;
     text-align: center;
-    border: 3px solid var(--sand);
-    border-radius: 14px;
-    color: var(--sand);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    color: var(--wood-dark);
+    background-color: var(--sand-soft);
 }
-.leftHint{
-    background-color: var(--jungle);
+/* Le bouton du côté vers lequel on swipe se met en avant */
+.choiceBtn.active{
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 7px 0 var(--wood-dark), 0 0 0 3px var(--amber);
 }
-.rightHint{
-    background-color: var(--sea);
+.choiceBtn:active{
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--wood-dark);
+}
+.choiceArrow{
+    flex: none;
+    font-size: 1.2rem;
+    font-weight: 900;
 }
 .cardName{
-    font-size: 1.3rem;
-    font-weight: 900;
-    color: var(--sea);
+    font-size: 1.35rem;
+    line-height: 1.1;
 }
 .cardText{
     white-space: pre-line;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    line-height: 1.42;
 }
 /* Bande latérale de validation du swipe, collée au bord de l'écran */
 .commitBand{
@@ -287,10 +408,10 @@ export default defineComponent({
     right: 0;
 }
 .commitBand.leftColor{
-    background-color: var(--jungle);
+    background-color: var(--jungle-soft);
 }
 .commitBand.rightColor{
-    background-color: var(--sea);
+    background-color: var(--sea-soft);
 }
 .commitBand.neutralColor{
     background-color: #ffffff;
@@ -305,33 +426,37 @@ export default defineComponent({
     justify-content: center;
     gap: 28px;
     line-height: 1;
+    pointer-events: none;
+    background: linear-gradient(transparent, var(--sand-soft) 40%);
+    padding-top: 8px;
 }
 .arrow{
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 900;
 }
 .arrow.neutral{
-    color: var(--wood);
-    opacity: 0.6;
+    color: var(--wood-mid);
 }
 .arrow.decisionLeft{
-    color: var(--jungle);
+    color: var(--jungle-soft);
 }
 .arrow.decisionRight{
-    color: var(--sea);
+    color: var(--sea-soft);
 }
 /* Compte rendu d'une équipe pendant une épreuve : bordure de la couleur de l'équipe ; l'équipe adverse en plus petit */
 .teamSection{
     box-sizing: border-box;
-    padding: 6px 10px;
-    border: 4px solid var(--wood);
-    border-radius: 10px;
-    font-size: 0.95rem;
-    line-height: 1.25;
+    padding: 5px 9px;
+    border: 2px solid var(--wood-dark);
+    border-radius: 6px;
+    background-color: #f2dfb0;
+    font-size: 0.85rem;
+    line-height: 1.3;
 }
 .teamSection.rival{
-    font-size: 0.75rem;
-    line-height: 1.2;
+    background-color: #efe0b4;
+    font-size: 0.72rem;
+    line-height: 1.25;
 }
 .portrait{
     text-align: center;
@@ -343,14 +468,12 @@ export default defineComponent({
     margin: 0 auto 8px;
     border-radius: 50%;
     font-size: 3rem;
-    font-weight: 900;
-    color: var(--sand);
-    background-color: var(--sea);
-    border: 4px solid var(--wood);
+    color: var(--sand-soft);
+    background-color: var(--wood-dark);
+    border: 4px solid var(--wood-light);
 }
 .portraitName{
     font-size: 1.5rem;
-    font-weight: 900;
 }
 .portraitCount{
     margin-top: 4px;

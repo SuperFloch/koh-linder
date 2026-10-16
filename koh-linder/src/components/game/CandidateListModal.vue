@@ -58,8 +58,9 @@ export default defineComponent({
     padding: 16px;
 }
 .listTitle {
+    font-family: var(--font-display);
     font-size: 1.4rem;
-    font-weight: 900;
+    font-weight: 400;
     text-align: center;
     margin-bottom: 8px;
 }
@@ -82,8 +83,8 @@ export default defineComponent({
     text-align: center;
     font-weight: 900;
     border-radius: 50%;
-    color: var(--sand);
-    background-color: var(--sea);
+    color: var(--sand-soft);
+    background-color: var(--wood-dark);
     border: 3px solid transparent;
 }
 .name {

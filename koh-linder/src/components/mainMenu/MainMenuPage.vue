@@ -47,8 +47,13 @@ export default defineComponent({
 </script>
 <style scoped>
 .kohPoints {
-    margin: -20px 0 20px;
+    margin: -16px auto 22px;
+    padding: 4px 16px;
     font-weight: 700;
+    color: var(--wood-dark);
+    background-color: var(--amber);
+    border: 2px solid var(--wood-dark);
+    border-radius: 999px;
 }
 .menu {
     width: 100%;

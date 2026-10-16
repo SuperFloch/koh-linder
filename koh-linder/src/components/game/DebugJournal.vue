@@ -61,18 +61,20 @@ export default defineComponent({
 })
 </script>
 <style scoped>
+/* En bas au centre, sous les boutons de choix (rien sur les côtés de l'écran de jeu) */
 .debugBtn {
     position: fixed;
-    left: 8px;
-    bottom: 8px;
+    left: 50%;
+    bottom: 2px;
+    transform: translateX(-50%);
     z-index: 10;
-    padding: 4px 10px;
-    font-size: 0.75rem;
+    padding: 1px 10px;
+    font-size: 0.65rem;
     font-weight: 700;
     cursor: pointer;
-    color: var(--sand);
+    color: var(--sand-soft);
     background-color: rgba(33, 20, 17, 0.85);
-    border: 2px dashed var(--sand);
+    border: 2px dashed var(--sand-soft);
     border-radius: 8px;
 }
 .journal {
@@ -100,7 +102,7 @@ export default defineComponent({
 .entry {
     margin: 6px 0;
     padding: 6px 10px;
-    border-left: 6px solid var(--jungle);
+    border-left: 6px solid var(--jungle-soft);
     background-color: rgba(33, 20, 17, 0.08);
     border-radius: 6px;
 }

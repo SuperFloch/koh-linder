@@ -1,5 +1,7 @@
 <template>
+    <!-- Planche de bois : titre de l'épreuve, puis piste / grilles en cases de sable -->
     <div class="trackWrap">
+        <div class="trackTitle display-font" v-if="title">{{ title }}</div>
         <!-- Puzzle : une grille par équipe, une case colorée par pièce bien placée -->
         <div class="grids" v-if="grids.length">
             <div v-for="g in grids" :key="g.key" class="gridBox" :class="{ mine: g.mine }" :style="{ borderColor: g.bg }">
@@ -51,6 +53,11 @@ export default defineComponent({
         },
         candidates: {
             type: Array
+        },
+        // Nom de l'épreuve (catalogue), affiché en tête de la planche
+        title: {
+            type: String,
+            default: ''
         }
     },
     computed: {
@@ -95,18 +102,28 @@ export default defineComponent({
 </script>
 <style scoped>
 .trackWrap {
-    margin: 8px 8px 0;
+    padding: 7px 9px 8px;
+    border-radius: 10px;
+    background-color: var(--wood-light);
+    border: 2px solid var(--wood-dark);
+    box-shadow: 0 4px 0 var(--wood-dark);
+}
+.trackTitle {
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: var(--sand-soft);
 }
 .status {
-    margin-top: 4px;
+    margin-top: 6px;
     padding: 2px 10px;
     text-align: center;
     font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--wood);
-    background-color: var(--sand);
-    border: 4px solid transparent;
-    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--wood-dark);
+    background-color: var(--sand-soft);
+    border: 3px solid transparent;
+    border-radius: 6px;
 }
 .trackRow {
     display: flex;
@@ -122,25 +139,25 @@ export default defineComponent({
     align-items: center;
 }
 .gaugeLabel {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     line-height: 1;
-    color: var(--sand);
+    color: var(--sand-soft);
 }
 .gaugeBar {
     position: relative;
     flex: 1;
-    width: 20px;
-    margin: 4px 0 6px;
-    border: 2px solid var(--sand);
+    width: 18px;
+    margin: 4px 0 2px;
+    border: 2px solid var(--wood-dark);
     border-radius: 8px;
-    background-color: var(--sea);
+    background-color: var(--sand-soft);
 }
 .gaugeTick {
     position: absolute;
     left: 0;
     right: 0;
     height: 1px;
-    background-color: rgba(250, 231, 157, 0.35);
+    background-color: var(--sand-deep);
 }
 .gaugeMarker {
     position: absolute;
@@ -151,23 +168,23 @@ export default defineComponent({
     border: 2px solid var(--wood);
 }
 .gaugeMarker.mine {
-    border-color: var(--sand);
+    box-shadow: 0 0 0 2px var(--amber);
 }
-/* Puzzle : une grille 5 x 5 par équipe */
+/* Puzzle : une grille 5 x 5 par équipe, cases de sable */
 .grids {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 14px;
 }
 .gridBox {
     padding: 3px;
-    border: 3px solid var(--sand);
-    border-radius: 8px;
-    background-color: var(--sea);
+    border: 3px solid var(--wood-dark);
+    border-radius: 6px;
+    background-color: var(--sand-soft);
     text-align: center;
 }
 .gridBox.mine {
-    box-shadow: 0 0 0 2px var(--sand);
+    box-shadow: 0 0 0 2px var(--amber);
 }
 .grid {
     display: grid;
@@ -177,40 +194,39 @@ export default defineComponent({
 .gridCell {
     width: 12px;
     height: 12px;
-    background-color: rgba(250, 231, 157, 0.15);
+    background-color: #dcc684;
 }
 .gridCount {
     font-size: 0.65rem;
-    color: var(--sand);
+    font-weight: 700;
+    color: var(--wood-dark);
 }
+/* Piste : cases de sable sur la planche, l'arrivée en ambre */
 .track {
     flex: 1;
     min-width: 0;
     display: flex;
-    border: 3px solid var(--sand);
-    border-radius: 10px;
-    background-color: var(--sea);
-    overflow: hidden;
+    gap: 2px;
 }
 .cell {
     position: relative;
     flex: 1;
     min-width: 0;
-    height: 64px;
-    border-right: 1px solid rgba(250, 231, 157, 0.35);
+    height: 48px;
+    border-radius: 4px;
+    background-color: var(--sand-soft);
     text-align: center;
     overflow: hidden;
 }
 .cell:last-child {
-    border-right: none;
     flex: 1.4;
-    background-color: var(--jungle);
+    background-color: var(--amber);
 }
 .cellLabel {
-    font-size: 0.65rem;
+    font-size: 0.55rem;
+    font-weight: 700;
     line-height: 1.2;
-    color: var(--sand);
-    opacity: 0.8;
+    color: var(--wood-mid);
 }
 .avatars {
     display: flex;
@@ -227,27 +243,26 @@ export default defineComponent({
     font-size: 7px;
     font-weight: 900;
     border-radius: 50%;
-    color: var(--wood);
-    background-color: var(--sky);
+    color: var(--sand-soft);
+    background-color: var(--wood-mid);
     border: 1px solid transparent;
 }
 .avatar.player {
     width: 20px;
     height: 20px;
-    line-height: 17px;
+    line-height: 16px;
     font-size: 11px;
-    color: var(--wood);
-    background-color: var(--sand);
-    border: 2px solid var(--wood);
-    box-shadow: 0 0 0 2px var(--sand);
+    color: var(--wood-dark);
+    background-color: var(--amber);
+    border: 2px solid var(--wood-dark);
 }
-/* Marqueur d'équipe : une pastille de la couleur de l'équipe (anneau sable pour l'équipe du joueur) */
+/* Marqueur d'équipe : une pastille de la couleur de l'équipe */
 .avatar.teamMarker {
     width: 16px;
     height: 16px;
     line-height: 12px;
     font-size: 9px;
-    border: 2px solid var(--wood);
+    border: 2px solid var(--wood-dark);
 }
 /* Nageur en apnée : marqueur grisé avec un léger filtre bleu foncé */
 .avatar.apnea {
@@ -270,17 +285,17 @@ export default defineComponent({
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    border: 1px solid var(--wood);
+    border: 1px solid var(--wood-dark);
 }
 .ball.mine {
-    border-color: var(--sand);
+    box-shadow: 0 0 0 1px var(--amber);
 }
 .count {
     position: absolute;
     right: 1px;
     bottom: 0;
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     font-weight: 700;
-    color: var(--sand);
+    color: var(--wood-dark);
 }
 </style>
