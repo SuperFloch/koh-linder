@@ -9,7 +9,8 @@ const HistoryType = {
     DISPUTE: "DISPUTE",                     // dispute entre candidats (l'AFF baisse)
     TEAM_SELECTION: "TEAM_SELECTION",       // formation des équipes : premiers choisis, derniers choisis
     CAMP_CONTRIBUTION: "CAMP_CONTRIBUTION", // vie de camp : contribution remarquée (bonne récolte, entretien...)
-    CAMP_FAULT: "CAMP_FAULT"                // vie de camp : manquement ou piètre résultat reproché
+    CAMP_FAULT: "CAMP_FAULT",               // vie de camp : manquement ou piètre résultat reproché
+    COUNCIL: "COUNCIL"                      // conseil : votes reçus, élimination, alliance tenue ou trahie
 };
 
 /**

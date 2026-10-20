@@ -2,6 +2,7 @@
     "start": "intro_01_bienvenue",
     "cards": [
         "cards/introduction.json",
+        "cards/council.json",
         "cards/challenges/epreuve_nage.json",
         "cards/challenges/epreuve_feu.json",
         "cards/challenges/flambeaux.json",
@@ -131,6 +132,7 @@
         "jobs",
         "team_names",
         "hot_meals",
-        "camp_projects"
+        "camp_projects",
+        "council"
     ]
 }

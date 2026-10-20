@@ -128,11 +128,12 @@ class Challenge {
         return 0;
     }
     /** "1er", "2e"... d'un rang (index 0 = premier), pour les descriptions du journal. */
-    rankWord(index, total) {
-        if (index == 0) return "premier";
+    rankWord(index, total, candidate) {
+        const feminine = (word) => (candidate && candidate.sex == "F" ? word.replace(/ier$/, "ière") : word);
+        if (index == 0) return feminine("premier");
         if (index == 1) return "deuxième";
-        if (index == total - 1) return "dernier";
-        if (index == total - 2) return "avant-dernier";
+        if (index == total - 1) return feminine("dernier");
+        if (index == total - 2) return feminine("avant-dernier");
         return (index + 1) + "e";
     }
     isPlayerName(name) {

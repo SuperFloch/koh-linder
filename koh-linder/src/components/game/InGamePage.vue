@@ -8,6 +8,8 @@
             <CampHeader v-if="showCamp" :game="game" />
             <RaceTrack v-if="showTrack" :challenge="game.activeChallenge" :candidates="game.candidates" :title="challengeTitle" />
             <DraftPicker v-if="showDraft" :game="game" :challenge="game.activeChallenge" />
+            <!-- Choix d'un nom au clic (tractation « détourner », vote du conseil) : on clique un portrait puis on swipe -->
+            <NamePicker v-if="game.activePicker" :game="game" />
         </div>
         <!-- Bouton de consultation du journal (débogage, voir src/debug.js) -->
         <DebugJournal v-if="debug" :game="game" />
@@ -89,6 +91,7 @@ import { defineComponent } from 'vue'
 import GameTopBar from './GameTopBar.vue';
 import RaceTrack from './RaceTrack.vue';
 import DraftPicker from './DraftPicker.vue';
+import NamePicker from './NamePicker.vue';
 import DebugJournal from './DebugJournal.vue';
 import CampHeader from './CampHeader.vue';
 import TropicalScene from './TropicalScene.vue';
@@ -117,6 +120,7 @@ export default defineComponent({
         GameTopBar,
         RaceTrack,
         DraftPicker,
+        NamePicker,
         DebugJournal,
         CampHeader,
         TropicalScene,
@@ -147,19 +151,19 @@ export default defineComponent({
         },
         // Hors épreuves, pendant la vie de camp
         showCamp(){
-            return !!this.game.challenges.CAMP_LIFE && !this.game.activeChallenge;
+            return !!this.game.challenges.CAMP_LIFE && !this.game.activeChallenge && !this.game.challenges.COUNCIL;
         },
         // Paysage de fond : plage pendant les épreuves (ciel bleu clair), plage + jungle au camp (ciel selon la période)
         sceneVariant(){
-            return this.showCamp ? 'camp' : 'beach';
+            return this.showCamp || !!this.game.challenges.COUNCIL ? 'camp' : 'beach';
         },
         // Illustration par défaut d'une carte sans `img` : bateau pendant l'introduction, sinon la scène du moment
         // Période du paysage : la carte nuit a l'arrière-plan de nuit, quelle que soit la période du jeu
         scenePeriod(){
-            return this.card && this.card.theme == 'NUIT' ? 'NIGHT' : this.game.period;
+            return this.card && (this.card.theme == 'NUIT' || this.card.theme == 'CONSEIL') ? 'NIGHT' : this.game.period;
         },
         illustrationVariant(){
-            if(this.card && this.card.theme == 'NUIT'){
+            if(this.card && (this.card.theme == 'NUIT' || this.card.theme == 'CONSEIL')){
                 return 'camp';
             }
             if(this.card && this.card.theme == 'INTRODUCTION'){

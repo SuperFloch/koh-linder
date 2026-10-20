@@ -6,8 +6,11 @@ import { EffectType } from "../Effect";
 import { RelationGauge, RollContext } from "../Character";
 import { HistoryType } from "../GameHistory";
 import { CAMP_PROJECTS } from "../Team";
+import { PitchKind, TRACTATION_PARAMS } from "../Tractation";
 import { Period, PERIOD_ORDER, PERIOD_LABELS, PERIOD_ACTIONS, PeriodKind, PERIOD_KINDS } from "../Time";
 import { Challenge } from "./Challenge";
+import { Council } from "./Council";
+import { TalkFlow } from "./CampTalk";
 
 /** Actions possibles pendant la journée. */
 const Action = {
@@ -230,6 +233,22 @@ class CampLife extends Challenge {
         this.pendingKind = null;  // DayKind de l'épreuve à lancer à la fin du tour
         this.activeKind = null;   // DayKind de l'épreuve en cours (récompense de confort / immunité au retour)
         this.comfortIndex = 0;    // prochaine récompense de confort (COMFORT_REWARDS)
+        this.talk = null;         // tractation du joueur en cours (TalkFlow) : la discussion est jouée en plusieurs cartes
+        this.talkResult = null;   // compte rendu de la tractation terminée, repris par `perform` (action TALK du joueur)
+        this.pendingCouncil = false; // le conseil doit commencer à la fin du tour (soir d'un jour de conseil)
+        this.councilHeld = {};    // jour -> true : le conseil de ce jour a déjà eu lieu
+        this.dayLog = [];         // résultats d'épreuves { day, text }, résumés par Denis au conseil
+        this.turnCard = null;     // { id, onFinish } de la carte de vie de camp, pour y revenir après un conseil
+    }
+    /** Portraits à choisir pendant une tractation (« détourner »), consultés par l'interface. */
+    get picker() {
+        return this.talk ? this.talk.picker : null;
+    }
+    selectName(game, name) {
+        if (this.talk) {
+            this.talk.select(name);
+            this.refresh(game);
+        }
     }
 
     // --- Interface Challenge ---
@@ -248,6 +267,19 @@ class CampLife extends Challenge {
      */
     playTurn(game, leftOrRight, card) {
         const kind = PERIOD_KINDS[this.period];
+        this.turnCard = { id: card.id, onFinish: card.challenge.onFinish };
+        const player = game.getEntityByName("{player}");
+        if (this.talk) {
+            // Tractation du joueur en cours : le swipe répond à la carte de discussion
+            const step = this.talk.turn(leftOrRight);
+            if (!step.done) {
+                this.refresh(game);
+                return "ID:" + card.id;
+            }
+            this.talk = null;
+            this.talkResult = step.log;
+            return this.runAction(game, card, kind, () => this.perform(game, player, Action.TALK));
+        }
         const choice = this.choiceNode(kind)[leftOrRight];
         if (!choice) {
             // Sens sans option (ex: haut sans kit de pêche) : rien ne se passe
@@ -259,7 +291,6 @@ class CampLife extends Challenge {
             this.refresh(game);
             return "ID:" + card.id;
         }
-        const player = game.getEntityByName("{player}");
         const check = this.availability(game, player, choice.action);
         if (!check.ok) {
             // Action impossible pour le moment : rien n'est dépensé, retour au premier choix (jamais d'impasse dans l'arbre)
@@ -268,15 +299,33 @@ class CampLife extends Challenge {
             this.refresh(game);
             return "ID:" + card.id;
         }
+        if (choice.action == Action.TALK) {
+            // Discuter : tractation en plusieurs cartes (sujet, ton, engagement) ; l'action n'est dépensée qu'à la fin
+            const partner = this.talkPartner(game, player);
+            if (partner && game.teamMembers(player.team).length >= 3) {
+                this.talk = new TalkFlow(game, this, player, partner);
+                this.log = "";
+                this.refresh(game);
+                return "ID:" + card.id;
+            }
+        }
+        return this.runAction(game, card, kind, () => this.perform(game, player, choice.action));
+    }
+    /**
+     * Dépense l'action du joueur (`playerAction` la réalise et renvoie son compte rendu), fait jouer les non-joueurs, passe à la
+     * période suivante si besoin. Renvoie le `next` de la carte (la même carte, la suite d'une épreuve ou d'un conseil, la fin).
+     */
+    runAction(game, card, kind, playerAction) {
         this.turnNotes = [];
         this.round = {};
-        const playerLog = this.perform(game, player, choice.action);
+        const playerLog = playerAction();
         if (kind != PeriodKind.WAKE) {
             // Les non-joueurs réalisent le choix qu'ils avaient déjà fait AVANT le joueur (voir planNpcs)
             this.candidates.filter((c) => !c.isPlayer).forEach((c) => this.perform(game, c, this.planned[c.name] || this.npcChoice(game, c, kind)));
         }
         this.bathe(game);
-        this.log = [playerLog, ...this.turnNotes].filter((l) => l).join(" ");
+        const actionLog = [playerLog, ...this.turnNotes].filter((l) => l).join(" ");
+        this.log = "";
         this.turnNotes = [];
         this.node = "ROOT";
         this.actionsDone++;
@@ -285,15 +334,46 @@ class CampLife extends Challenge {
         } else {
             this.planNpcs(game, kind);
         }
+        // Le compte rendu de l'action est montré tout de suite si la journée s'achève (nuit, conseil, épreuve du lendemain) : il aurait
+        // sinon été affiché sur la carte du matin suivant. Sinon il accompagne la question suivante.
+        const dayEnds = !!(this.nightEvent || this.pendingCouncil || this.pendingChallenge || this.finished);
+        this.log = dayEnds ? this.log : [actionLog, this.log].filter((l) => l).join(" ");
+        const result = dayEnds ? actionLog : "";
         this.refresh(game);
         if (this.pendingChallenge && !this.finished) {
             // Jour d'épreuve : une épreuve de la collection (cards/challenges), tirée au sort dans le bon contexte (équipe avant la
             // réunification, individuelle après), remplace le matin ; on reprend la vie de camp à midi ensuite.
             this.pendingChallenge = false;
             this.activeKind = this.pendingKind;
-            return this.withNightCard(game, "CHALLENGE:" + game.challengeContext + ":" + card.id);
+            return this.withDayEndCard(game, result, this.withNightCard(game, "CHALLENGE:" + game.challengeContext + ":" + card.id));
         }
-        return this.withNightCard(game, this.finished ? card.challenge.onFinish : "ID:" + card.id);
+        if (this.pendingCouncil && !this.finished) {
+            // Soir d'un jour de conseil : le conseil remplace la nuit ; le sommeil suit (voir `afterCouncil`)
+            this.pendingCouncil = false;
+            if (Council.canHold(game)) {
+                game.applyEffect({ type: EffectType.CHALLENGE_START, target: Council.ID });
+                return this.withDayEndCard(game, result, "ID:council_turn");
+            }
+            return this.withDayEndCard(game, result, this.afterCouncil(game));
+        }
+        return this.withDayEndCard(game, result, this.withNightCard(game, this.finished ? card.challenge.onFinish : "ID:" + card.id));
+    }
+    /**
+     * Fin du conseil (appelé par Game pour `next: "CAMP_RESUME"`) : l'influence des tractations et l'immunité sont effacées, la nuit
+     * passe (carte nuit), puis retour à la vie de camp — ou fin de l'aventure du joueur s'il vient d'être éliminé.
+     * @returns {string} `next` à suivre
+     */
+    afterCouncil(game) {
+        game.immuneTeam = null;
+        game.tractations.reset();
+        const player = game.getEntityByName("{player}");
+        this.endPeriod(game);
+        this.refresh(game);
+        if (player.eliminated) {
+            return "ID:council_out";
+        }
+        const card = this.turnCard;
+        return this.withNightCard(game, this.finished ? card.onFinish : "ID:" + card.id);
     }
     /**
      * Si une carte nuit vient d'être tirée pour l'équipe du joueur, elle a sa propre carte (nom de la carte nuit, texte) montrée
@@ -306,7 +386,7 @@ class CampLife extends Challenge {
         if (!event) {
             return next;
         }
-        game.queuedCard = Card.deserialize({
+        game.queuedCards.push(Card.deserialize({
             id: "night_" + event.day,
             single_use: false,
             name: event.name,
@@ -315,7 +395,28 @@ class CampLife extends Challenge {
             img: "",
             text: event.text,
             choices: { left: { text: "Suivant", next }, right: { text: "Suivant", next } }
-        });
+        }));
+        return "QUEUED";
+    }
+    /**
+     * Bilan immédiat de la dernière action de la journée (discussion du soir, par exemple) : sans cette carte, le compte rendu
+     * n'apparaissait que sur la carte du lendemain matin. Mise en file avant la carte nuit ou le conseil qui suivent.
+     * @returns {string} `next` à suivre
+     */
+    withDayEndCard(game, text, next) {
+        if (!text) {
+            return next;
+        }
+        game.queuedCards.unshift(Card.deserialize({
+            id: "dayend_" + game.currentDay + "_" + this.actionCount[game.getEntityByName("{player}").name],
+            single_use: false,
+            name: "Fin de journée",
+            type: "NARRATION",
+            theme: "CAMP",
+            img: "",
+            text: game.personalize(text),
+            choices: { left: { text: "Suivant", next }, right: { text: "Suivant", next } }
+        }));
         return "QUEUED";
     }
     /**
@@ -329,7 +430,7 @@ class CampLife extends Challenge {
             group.forEach((a) => group.filter((b) => b !== a).forEach((b) => a.changeRelation(b.name, RelationGauge.AFF, this.params.swimAff)));
             const player = group.find((c) => c.isPlayer);
             if (player && group.length > 1) {
-                this.turnNotes.push("Vous vous baignez avec " + group.filter((c) => !c.isPlayer).map((c) => c.name).join(", ") + " (+" + this.params.swimAff + " d'affection).");
+                this.turnNotes.push("Vous vous baignez avec " + group.filter((c) => !c.isPlayer).map((c) => c.name).join(", ") + ".");
             }
         });
     }
@@ -371,6 +472,12 @@ class CampLife extends Challenge {
         while (true) {
             index++;
             if (index >= PERIOD_ORDER.length) {
+                if (this.isCouncilDay(game.currentDay) && !this.councilHeld[game.currentDay]) {
+                    // Le conseil remplace la nuit : on s'arrête ici, `afterCouncil` reprendra par le sommeil
+                    this.councilHeld[game.currentDay] = true;
+                    this.pendingCouncil = true;
+                    return;
+                }
                 this.sleep(game);
                 const p = this.params;
                 if (p.stopAfterNight || (p.lastDay && game.currentDay >= p.lastDay)) {
@@ -544,6 +651,7 @@ class CampLife extends Challenge {
         const team = game.teams.find((t) => t.color == result.winner);
         const label = "Les " + (result.winner == "RED" ? "Rouges" : "Jaunes");
         const notes = [];
+        this.dayLog.push({ day: game.currentDay, text: (kind == DayKind.IMMUNITY ? "Épreuve d'immunité" : "Épreuve de confort") + " (" + entry.name + ") : victoire des " + (result.winner == "RED" ? "Rouges" : "Jaunes") + "." });
         if (kind == DayKind.IMMUNITY) {
             game.immuneTeam = result.winner;
             notes.push(label + " remportent l'immunité : ils n'iront pas au conseil.");
@@ -604,6 +712,9 @@ class CampLife extends Challenge {
     }
     /** Nœud de choix courant : l'arbre pour les tâches, un choix direct pour les autres périodes. */
     choiceNode(kind) {
+        if (this.talk) {
+            return this.talk.node();
+        }
         if (kind != PeriodKind.TASK) {
             return DIRECT_CHOICES[kind];
         }
@@ -818,9 +929,26 @@ class CampLife extends Challenge {
             case Action.FIRE:
                 return this.tryFire(game, c);
             case Action.TALK: {
+                if (you && this.talkResult) {
+                    // Tractation jouée en plusieurs cartes (TalkFlow) : son compte rendu remplace le jet de discussion
+                    const result = this.talkResult;
+                    this.talkResult = null;
+                    return result;
+                }
                 const partner = this.talkPartner(game, c);
                 if (!partner) {
                     return you ? "Personne à qui parler." : "";
+                }
+                if (!you && Math.random() < TRACTATION_PARAMS.npcPitchChance && game.teamMembers(c.team).length >= 3) {
+                    // Les non-joueurs aussi font des tractations entre eux (voir Tractation.npcPitch)
+                    const pitch = game.tractations.npcPitch(game, c, partner);
+                    if (pitch && pitch.toPlayer) {
+                        const verb = pitch.kind == PitchKind.CHARGE ? "devrait partir" : "mérite d'être protégé" + (pitch.target.sex == "F" ? "e" : "");
+                        this.turnNotes.push(c.name + " glisse à " + mark(partner.name) + " : « Pour moi, " + pitch.target.name + " " + verb + ". »");
+                    }
+                    if (pitch) {
+                        return "";
+                    }
                 }
                 const rolled = this.rollWithCards(c, "SOC", RollContext.TALK);
                 if (rolled.card) {
@@ -865,7 +993,7 @@ class CampLife extends Challenge {
         const group = [c, ...helpers];
         group.forEach((m) => m.changeEnergy(-p.fireEnergy));
         const outcome = this.jointRoll(group, "INT", p.fireThreshold);
-        const names = group.map((m) => m.name).join(", ");
+        const names = group.map((m) => m.name).slice(0, -1).join(", ") + " et " + group[group.length - 1].name;
         if (outcome.ok) {
             camp.equipements.fire = true;
             group.forEach((m) => {
@@ -958,8 +1086,11 @@ class CampLife extends Challenge {
             hint = " " + (up ? up + " coéquipier" + (up > 1 ? "s sont" : " est") + " déjà debout." : "Personne n'est encore debout.");
         }
         // Choix déjà faits par les coéquipiers pour cette action (ils jouent avant le joueur)
-        const mates = this.teammateChoices(game, player);
+        const mates = this.talk ? "" : this.teammateChoices(game, player);
         const choices = mates ? "\nChoix de l'équipe — " + mates : "";
+        if (this.talk) {
+            hint = "";
+        }
         game.vars.campPrompt = (this.log ? game.personalize(this.log) + "\n" : "") + header + choices + "\n" + node.question + hint;
         game.vars.campLeft = label(node.left);
         game.vars.campRight = label(node.right);

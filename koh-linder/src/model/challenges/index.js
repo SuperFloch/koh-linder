@@ -11,6 +11,7 @@ import { SpoolRace } from "./SpoolRace";
 import { SlingRelay } from "./SlingRelay";
 import { DivingBoard } from "./DivingBoard";
 import { WaterPuzzle } from "./WaterPuzzle";
+import { Council } from "./Council";
 
 /**
  * Registre des épreuves : identifiant (propriété `target` des effets CHALLENGE_*) -> classe.
@@ -30,6 +31,7 @@ const CHALLENGES = {
     [SlingRelay.ID]: SlingRelay,
     [DivingBoard.ID]: DivingBoard,
     [WaterPuzzle.ID]: WaterPuzzle,
+    [Council.ID]: Council,
 };
 
 function createChallenge(id, params) {

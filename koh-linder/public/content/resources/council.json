@@ -1,0 +1,68 @@
+{
+    "topics": {
+        "negativeFact": [
+            "Tu as entendu ? {fact}. Ça fait tache, non ?",
+            "{fact}. Franchement, je me pose des questions sur {target}.",
+            "{fact}. On ne peut pas dire que {target} nous aide beaucoup.",
+            "Je n'arrête pas d'y penser : {fact}. Qu'en dis-tu ?"
+        ],
+        "positiveFact": [
+            "{fact}. Il faut le reconnaître, {target} s'accroche.",
+            "{fact}. Ça compte pour l'équipe, non ?",
+            "{fact}. Franchement, ça force le respect.",
+            "{fact}. On aurait tort de l'oublier."
+        ],
+        "negativeGeneric": [
+            "Franchement, {target} ne me dit rien qui vaille.",
+            "Je trouve que {target} n'en fait pas assez au camp.",
+            "Je ne sais pas pourquoi, mais je ne sens pas {target} dans l'esprit d'équipe.",
+            "Il y a quelque chose qui me dérange chez {target}, sans que je puisse dire quoi."
+        ],
+        "positiveGeneric": [
+            "{target} est quelqu'un de bien, je trouve.",
+            "Avec {target}, on est vraiment bien. On peut compter sur cette personne.",
+            "J'ai confiance en {target}. Ce serait dommage de ne plus l'avoir avec nous."
+        ]
+    },
+    "comments": {
+        "fact": [
+            "{fact}. Pour moi, {target} est un risque pour l'équipe.",
+            "Je n'arrive pas à oublier ceci : {fact}. Mon regard se tourne vers {target}.",
+            "{fact}. Ça pèse lourd dans ma décision à propos de {target}."
+        ],
+        "generic": [
+            "Je ne sens plus {target} dans l'esprit d'équipe.",
+            "Je ne suis pas sûr{e} de pouvoir encore compter sur {target}.",
+            "Ce n'est pas personnel, mais {target} m'inspire moins confiance que les autres."
+        ],
+        "selfFact": [
+            "{fact}. Je suis désolé{e}, mais ça pèse dans ma décision, {player}.",
+            "{player}, je vais être honnête : {fact}. Je ne peux pas faire comme si de rien n'était."
+        ],
+        "selfGeneric": [
+            "Je ne me sens plus en phase avec toi, {player}.",
+            "{player}, je crois que tu as perdu la confiance de certains ici, et un peu la mienne aussi."
+        ],
+        "brokenConduct": [
+            "Depuis quelques jours, je ne te fais plus confiance, {player}. Notre accord ne tient plus.",
+            "{player}, tu m'as déçu{e}. Je ne me sens plus tenu{e} par ce qu'on s'est dit."
+        ],
+        "brokenRival": [
+            "Plusieurs personnes m'ont parlé, {player}. Je ne peux plus te garantir mon vote.",
+            "J'ai beaucoup réfléchi, {player}. D'autres arguments m'ont fait douter de notre accord."
+        ],
+        "heldPact": [
+            "On a un accord, {player}. Je tiens parole ce soir.",
+            "{player}, tu peux compter sur moi : ce qu'on s'est dit tient toujours."
+        ]
+    },
+    "lastWords": [
+        "Je pars la tête haute. Bonne chance à vous tous, allez jusqu'au bout.",
+        "Je ne regrette rien. Ces jours sur l'île m'ont changé.",
+        "Je ne vous en veux pas. Faites en sorte que ça en vaille la peine.",
+        "J'ai tout donné. Prenez soin de vous et gagnez pour moi !",
+        "C'est dur de partir maintenant, mais j'ai vécu quelque chose d'incroyable. Merci.",
+        "Vous avez fait votre choix. J'espère juste que vous ne le regretterez pas.",
+        "Je m'attendais à plus de loyauté. Mais c'est le jeu. Bravo à vous."
+    ]
+}

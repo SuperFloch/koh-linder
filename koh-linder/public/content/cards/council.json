@@ -1,0 +1,31 @@
+{
+    "cards": [
+        {
+            "single_use": false,
+            "id": "council_turn",
+            "name": "{councilName}",
+            "type": "CHALLENGE_TURN",
+            "theme": "CONSEIL",
+            "img": "",
+            "text": "{councilText}",
+            "challenge": { "id": "COUNCIL", "onFinish": "CAMP_RESUME" },
+            "choices": {
+                "left": { "text": "{councilLeft}", "next": "" },
+                "right": { "text": "{councilRight}", "next": "" }
+            }
+        },
+        {
+            "single_use": false,
+            "id": "council_out",
+            "name": "Fin de l'aventure",
+            "type": "NARRATION",
+            "theme": "CONSEIL",
+            "img": "",
+            "text": "Votre flambeau est éteint : votre aventure s'arrête ici. Les jours passés sur l'île resteront gravés dans votre mémoire.",
+            "choices": {
+                "left": { "text": "Quitter l'île", "next": "END" },
+                "right": { "text": "Quitter l'île", "next": "END" }
+            }
+        }
+    ]
+}

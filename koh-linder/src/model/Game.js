@@ -7,6 +7,7 @@ import { createChallenge } from "./challenges";
 import { GameHistory, HistoryType } from "./GameHistory";
 import { personalize, display } from "./Personalize";
 import { loadCampProjects } from "./Team";
+import { Tractations } from "./Tractation";
 const GAME_DEFAULT_DURATION = 40;
 // Variables de texte qui rapportent les actions du joueur : « Vous » y devient son prénom surligné
 const PERSONAL_VARS = ["raceLog", "nextStep", "draftLog"];
@@ -35,6 +36,9 @@ class Game {
         this.sitOut = [];
         // Équipe immunisée au prochain conseil (épreuve d'immunité gagnée), null si aucune
         this.immuneTeam = null;
+        // Influences des tractations (discussions) sur le prochain conseil ; candidats protégés par une immunité individuelle (après la réunification)
+        this.tractations = new Tractations();
+        this.individualImmune = [];
         this.cardPile = content.cards;
         this.candidates = generateCandidates(content.characters, content.resources, playerCharacter);
         this.dayCount = GAME_DEFAULT_DURATION;
@@ -59,8 +63,8 @@ class Game {
         // Cartes de personnage déclenchées par les jets du joueur, à montrer avant la suite ; carte à reprendre ensuite
         this.pendingCards = [];
         this.resumeCard = null;
-        // Carte construite par une épreuve, à montrer au prochain `next: "QUEUED"` (carte nuit de la vie de camp)
-        this.queuedCard = null;
+        // Cartes construites par une épreuve, à montrer une par une aux `next: "QUEUED"` (bilan de fin de journée, carte nuit de la vie de camp)
+        this.queuedCards = [];
 
         this.finished = false;
         this.cardQueue = [];
@@ -148,6 +152,14 @@ class Game {
      */
     get activeChallenge() {
         return Object.values(this.challenges).find((c) => c.visible) || null;
+    }
+    /**
+     * Choix d'un nom au clic sur un portrait (tractation « détourner », vote du conseil) : épreuve en cours qui expose un `picker`
+     * { names, selection } et une méthode `selectName(game, name)`. Null si aucune.
+     */
+    get activePicker() {
+        const challenge = Object.values(this.challenges).find((c) => c.picker);
+        return challenge ? { challenge, picker: challenge.picker } : null;
     }
     /**
      * Épreuve en cours désignée par son identifiant (propriété `target` des effets et `challenge.id` des cartes).
@@ -259,11 +271,15 @@ class Game {
                 const returnId = this.returnStack.pop();
                 return returnId ? (this.cardPile.find((c) => c.id == returnId) || null) : null;
             }
+            case "CAMP_RESUME": {
+                // Fin d'un conseil : la vie de camp reprend (nuit, puis jour suivant), ou l'aventure du joueur s'arrête
+                delete this.challenges.COUNCIL;
+                const life = this.challenges.CAMP_LIFE;
+                return life ? this.getNextCard(life.afterCouncil(this), currentCard) : null;
+            }
             case "QUEUED": {
                 // Carte construite par une épreuve (ex: la carte nuit de la vie de camp), à montrer maintenant
-                const queued = this.queuedCard;
-                this.queuedCard = null;
-                return queued || null;
+                return this.queuedCards.shift() || null;
             }
             case "RESUME":
                 // Fin d'une carte de personnage intercalée : suivante en attente, sinon la carte qui était prévue

@@ -79,7 +79,7 @@ class SwimRace extends RaceChallenge {
                     game.applyEffect({
                         type: EffectType.RELATION, gauge: RelationGauge.REP, target: "ALL", about: name, value: rewards[name],
                         historyType: rewards[name] > 0 ? HistoryType.CHALLENGE_SUCCESS : HistoryType.CHALLENGE_FAILURE,
-                        description: name + " arrive " + this.rankWord(rank - 1, this.arrived.length) + " à l'épreuve de nage jusqu'à la rive"
+                        description: name + " arrive " + this.rankWord(rank - 1, this.arrived.length, game.getEntityByName(name)) + " à l'épreuve de nage jusqu'à la rive"
                     });
                 }
             });
