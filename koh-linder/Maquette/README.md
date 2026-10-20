@@ -38,4 +38,16 @@ Canevas complet (toutes les pistes explorées) : https://claude.ai/artifact/WH41
 | `--sea-soft` | #1d3f63 | choix droite |
 | `--team-red-soft` / `--team-yellow-soft` | #e0553f / #e8c93a | marqueurs d'équipe sur fond sable / bois |
 
+## Symboles des stats (`stats/*.svg`)
+Pastille ronde de couleur (contour bois) + pictogramme sable, 24 × 24, intégrés au jeu par `StatIcon.vue` (ils remplacent les emojis) :
+STR poing fermé (#e0553f) · INT cerveau (bleu marine #1d3f63) · SWI nageur (#2a8fb0) · AGI acrobate (jaune #e8c93a, pictogramme bois) ·
+OBS yeux (vert #2f5a26) · SOC sourire (#d9772e). Utilisés sur les options (stat testée + difficulté) et dans les étiquettes de
+résultat de jet (vert / rouge, sans chiffres). `apercu.html` les montre en grand.
+
+## Cartes de vie de camp : la boussole (piste E)
+Chaque option est placée dans le sens de son swipe autour de l'avatar du joueur (haut / gauche / droite / bas, croix en pointillés),
+avec l'intitulé, le détail du lieu, les pastilles (stat testée + difficulté en mots, gains, coûts) et les **avatars des coéquipiers**
+qui ont fait ce choix (4 au plus, puis « +N »). Pas de compte rendu d'action sur la carte. Toucher une option = swiper. La carte
+remplace les boutons de choix du bas. Les tractations gardent leur carte de texte.
+
 Polices : **Lilita One** (titres, chiffres) et **Rubik** (texte), Google Fonts.

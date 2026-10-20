@@ -5,7 +5,7 @@ import { RelationGauge } from "./Character";
 import { generateCandidates, pick, shuffle } from "./CandidateGenerator";
 import { createChallenge } from "./challenges";
 import { GameHistory, HistoryType } from "./GameHistory";
-import { personalize, display } from "./Personalize";
+import { personalize, display, stripStats } from "./Personalize";
 import { loadCampProjects } from "./Team";
 import { Tractations } from "./Tractation";
 const GAME_DEFAULT_DURATION = 40;
@@ -329,7 +329,7 @@ class Game {
     record(type, participants, description, data) {
         const entities = participants.map((p) => (typeof p == "string" ? this.getEntityByName(p) : p));
         // Équipes des participants au moment de l'évènement (le journal masque les évènements de l'équipe adverse)
-        return this.history.add(type, entities.map((e) => e.id), this.format(description), this.currentDay, data, entities.map((e) => e.team));
+        return this.history.add(type, entities.map((e) => e.id), stripStats(this.format(description)), this.currentDay, data, entities.map((e) => e.team));
     }
     /**
      * Entrée d'historique d'un effet RELATION de plus de 1. Type et description peuvent être donnés par l'effet

@@ -28,7 +28,7 @@
                 <div class="points">Points répartis : {{ creatorTotal }} / {{ creatorRules.points }}</div>
                 <div class="creatorAttributes">
                     <div v-for="(value, attr) in creator.attributes" :key="attr" class="attribute">
-                        <span class="attrName statIcon" :title="attr">{{ icon(attr) }}</span>
+                        <span class="attrName statIcon" :title="attr"><StatIcon :stat="attr" size="1.3em" /></span>
                         <button class="tiki-btn small step" :disabled="!canAdjust(attr, -1)" @click="adjust(attr, -1)" aria-label="Diminuer">&minus;</button>
                         <span class="attrValue">{{ value }}</span>
                         <button class="tiki-btn small step" :disabled="!canAdjust(attr, 1)" @click="adjust(attr, 1)" aria-label="Augmenter">+</button>
@@ -44,7 +44,7 @@
                 <div class="infos">{{ selected.job }}, {{ selected.age }} ans</div>
                 <div class="attributes">
                     <div v-for="(value, attr) in selected.attributes" :key="attr" class="attribute">
-                        <span class="attrName statIcon" :title="attr">{{ icon(attr) }}</span>
+                        <span class="attrName statIcon" :title="attr"><StatIcon :stat="attr" size="1.3em" /></span>
                         <span class="attrBar"><span class="attrFill" :style="{ width: Math.min(value, 10) * 10 + '%' }"></span></span>
                         <span class="attrValue">{{ value }}</span>
                     </div>
@@ -61,12 +61,14 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { Character, RarityLabel, STAT_ICONS } from 'src/model/Character';
+import { Character, RarityLabel } from 'src/model/Character';
 import { randomFirstName, randomJobEntry, randomAge, pick } from 'src/model/CandidateGenerator';
 import { isUnlocked } from 'src/content/ProfileStore';
+import StatIcon from 'src/components/game/StatIcon.vue';
 
 export default defineComponent({
   name: 'CharSelectionPage',
+  components: { StatIcon },
   emits: ['back','start'],
   props: {
     // Réserve complète de personnages ; seuls les personnages débloqués sont proposés
@@ -123,10 +125,6 @@ export default defineComponent({
   methods: {
     rarityLabel(rarity){
         return RarityLabel[rarity];
-    },
-    // Symbole d'une stat (bras, cerveau, nageur, danseuse, yeux, sourire)
-    icon(attr){
-        return STAT_ICONS[attr];
     },
     setSex(sex){
         if(this.creator.sex != sex){

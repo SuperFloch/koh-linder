@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Agilité (AGI)">
+  <circle cx="12" cy="12" r="11" fill="#e8c93a" stroke="#1a100d" stroke-width="1.5"/>
+  <!-- Acrobate en saut étoilé (bois sur fond jaune) -->
+  <circle cx="12" cy="5.9" r="1.9" fill="#1a100d"/>
+  <path d="M12 8.6v4.8M6.6 7.4l5.4 2.4 5.4-2.4M12 13.4l-3.8 4.8M12 13.4l3.8 4.8" fill="none" stroke="#1a100d" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

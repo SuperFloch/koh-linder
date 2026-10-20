@@ -11,6 +11,9 @@ const ME_CLOSE = "⁤";
 // Marqueurs invisibles d'un label de jet de dé : ROLL_OPEN + (1 réussite / 0 échec) + stats en minuscules séparées par des virgules + ROLL_CLOSE
 const ROLL_OPEN = "\u2060";
 const ROLL_CLOSE = "\u2061";
+// Marqueurs invisibles d'un symbole de stat (rendu en SVG par l'interface, `StatIcon.vue`) : STAT_OPEN + code + STAT_CLOSE
+const STAT_OPEN = "\u206a";
+const STAT_CLOSE = "\u206b";
 
 function mark(name) {
     return ME_OPEN + name + ME_CLOSE;
@@ -115,9 +118,13 @@ function rollLabels(text) {
         .replace(new RegExp("\\(" + STAT + " (-?\\d+) / (-?\\d+)\\)", "g"), (m, stat, total, threshold) => rollToken(total, threshold, [stat]));
 }
 
-/** Remplace les codes de stats (STR, INT, SWI, AGI, OBS, SOC) restants par leur symbole. */
+/** Remplace les codes de stats (STR, INT, SWI, AGI, OBS, SOC) restants par un marqueur de symbole (rendu en SVG, voir `splitRich`). */
 function statSymbols(text) {
-    return typeof text == "string" ? text.replace(new RegExp("\\b" + STAT + "\\b", "g"), (m, stat) => STAT_ICONS[stat]) : text;
+    return typeof text == "string" ? text.replace(new RegExp("\\b" + STAT + "\\b", "g"), (m, stat) => STAT_OPEN + stat + STAT_CLOSE) : text;
+}
+/** Texte brut sans marqueurs de symboles : le code de la stat reste lisible (pour un affichage sans SVG). */
+function stripStats(text) {
+    return typeof text == "string" ? text.replace(new RegExp(STAT_OPEN + STAT + STAT_CLOSE, "g"), (m, stat) => stat) : text;
 }
 
 /** Texte prêt à afficher : détail des jets remplacé par des labels, codes de stats remplacés par leurs symboles. */
@@ -126,12 +133,12 @@ function display(text) {
 }
 
 /**
- * Découpe un texte affiché en segments : { kind: "text" | "me" | "roll", text, ok, stats, icons } (prénom du joueur à surligner,
- * labels de jets avec les symboles des stats testées et la réussite).
+ * Découpe un texte affiché en segments : { kind: "text" | "me" | "roll" | "stat", text, ok, stats, icons, stat } (prénom du joueur à
+ * surligner, labels de jets avec les stats testées et la réussite, symboles de stats).
  */
 function splitRich(text) {
     const parts = [];
-    const re = new RegExp("(" + ME_OPEN + "([^" + ME_CLOSE + "]*)" + ME_CLOSE + ")|(" + ROLL_OPEN + "([01])([^" + ROLL_CLOSE + "]*)" + ROLL_CLOSE + ")", "g");
+    const re = new RegExp("(" + ME_OPEN + "([^" + ME_CLOSE + "]*)" + ME_CLOSE + ")|(" + ROLL_OPEN + "([01])([^" + ROLL_CLOSE + "]*)" + ROLL_CLOSE + ")|" + STAT_OPEN + STAT + STAT_CLOSE, "g");
     var last = 0;
     var m;
     while ((m = re.exec(text)) !== null) {
@@ -140,6 +147,8 @@ function splitRich(text) {
         }
         if (m[1] !== undefined) {
             parts.push({ kind: "me", text: m[2] });
+        } else if (m[6] !== undefined) {
+            parts.push({ kind: "stat", stat: m[6] });
         } else {
             const stats = m[5].split(",").filter((s) => s).map((s) => s.toUpperCase());
             parts.push({ kind: "roll", ok: m[4] == "1", stats, icons: stats.map((s) => STAT_ICONS[s]) });
@@ -165,4 +174,4 @@ function accord(candidate, masculine) {
     return candidate && candidate.sex == "F" ? masculine + "e" : masculine;
 }
 
-export { personalize, mark, splitMe, splitRich, rollLabels, statSymbols, display, stripMarks, il, accord, ME_OPEN, ME_CLOSE, ROLL_OPEN, ROLL_CLOSE }
+export { personalize, mark, splitMe, splitRich, rollLabels, statSymbols, stripStats, display, stripMarks, il, accord, ME_OPEN, ME_CLOSE, ROLL_OPEN, ROLL_CLOSE, STAT_OPEN, STAT_CLOSE }

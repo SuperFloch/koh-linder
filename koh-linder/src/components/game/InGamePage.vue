@@ -16,11 +16,15 @@
         <div class="swipeListener" :class="{ withDebug: debug }" ref="swipe">
           <div class="cardArea">
             <div class="currentCard" ref="currentCard" v-if="card">
-              <div class="cardInner">
+              <!-- Vie de camp : carte boussole (options placées dans le sens du swipe, avatars des coéquipiers) -->
+              <div class="cardInner" v-if="campView">
+                <CampCompass :view="campView" :team-color="playerTeamColor" :active="slideDir" @choose="choose" />
+              </div>
+              <div class="cardInner" v-else>
                 <CardIllustration v-if="hasIllustration" :class="{ compact: card.type == 'CHALLENGE_TURN' }" :img="card.img"
                     :variant="illustrationVariant" :period="scenePeriod" />
                 <div class="cardBody" :class="{ centered: card.type == 'PORTRAITS' }">
-                    <div class="cardName display-font">{{ game.format(card.name) }}</div>
+                    <div class="cardName display-font"><RichText :text="game.format(card.name)" /></div>
                     <div v-if="card.type == 'PORTRAITS' && portrait" class="portrait">
                         <div class="portraitFace display-font">{{ portrait.name.charAt(0) }}</div>
                         <div class="portraitName display-font">{{ portrait.name }}</div>
@@ -30,9 +34,9 @@
                     <!-- Épreuves d'équipe : un bloc par équipe, bordure de sa couleur, police réduite pour l'équipe adverse -->
                     <template v-if="hasSections">
                         <div v-for="s in game.logSections" :key="s.color" class="teamSection" :class="{ rival: !s.mine }"
-                            :style="{ borderColor: teamCss(s.color) }"><template v-for="(seg, i) in segments(game.display(game.personalize(s.text)))" :key="i"><mark v-if="seg.kind == 'me'" class="me">{{ seg.text }}</mark><span v-else-if="seg.kind == 'roll'" class="rollGroup"><span v-for="(icon, j) in seg.icons" :key="j" class="rollLabel" :class="seg.ok ? 'ok' : 'fail'" :title="seg.ok ? 'Réussite' : 'Échec'">{{ icon }}</span></span><template v-else>{{ seg.text }}</template></template></div>
+                            :style="{ borderColor: teamCss(s.color) }"><RichText :text="game.display(game.personalize(s.text))" /></div>
                     </template>
-                    <div class="cardText"><template v-for="(seg, i) in segments(cardText)" :key="i"><mark v-if="seg.kind == 'me'" class="me">{{ seg.text }}</mark><span v-else-if="seg.kind == 'roll'" class="rollGroup"><span v-for="(icon, j) in seg.icons" :key="j" class="rollLabel" :class="seg.ok ? 'ok' : 'fail'" :title="seg.ok ? 'Réussite' : 'Échec'">{{ icon }}</span></span><template v-else>{{ seg.text }}</template></template></div>
+                    <div class="cardText"><RichText :text="cardText" /></div>
                 </div>
                 <!-- Nature du swipe : flèche biface = pas de décision ; deux flèches colorées = décision -->
                 <div class="swipeSymbol">
@@ -62,23 +66,24 @@
           <!-- Bande verticale collée au bord de l'écran, quand le swipe est assez avancé pour valider le choix : couleur du choix, blanche si ce n'est pas une décision -->
           <div v-if="card && commitDir" class="commitBand" :class="[commitDir, isDecision ? commitDir + 'Color' : 'neutralColor']"></div>
           <!-- Choix sous la carte, toujours visibles : toucher un bouton = swiper de ce côté -->
-          <div class="choiceZone" :class="{ fourWay: hasVertical }">
-              <!-- Carte à 4 sens de swipe (vie de camp) : un bouton par option disponible -->
+          <!-- (absente sur la carte boussole, dont les options sont elles-mêmes des boutons) -->
+          <div v-if="!campView" class="choiceZone" :class="{ fourWay: hasVertical }">
+              <!-- Carte à 4 sens de swipe (tractations) : un bouton par option disponible -->
               <template v-if="card && hasVertical">
                   <button v-for="c in choiceList" :key="c.dir" class="choiceBtn" :class="[c.dir, { active: slideDir == c.dir }]" @click="choose(c.dir)">
-                      <span class="choiceArrow" aria-hidden="true">{{ c.arrow }}</span><span>{{ c.text }}</span>
+                      <span class="choiceArrow" aria-hidden="true">{{ c.arrow }}</span><RichText :text="c.text" />
                   </button>
               </template>
               <template v-else-if="card && isDecision">
                   <button class="choiceBtn left" :class="{ active: slideDir == 'left' }" @click="choose('left')">
-                      <span class="choiceArrow" aria-hidden="true">&#8592;</span><span>{{ game.format(card.choices.left.text) }}</span>
+                      <span class="choiceArrow" aria-hidden="true">&#8592;</span><RichText :text="game.format(card.choices.left.text)" />
                   </button>
                   <button class="choiceBtn right" :class="{ active: slideDir == 'right' }" @click="choose('right')">
-                      <span>{{ game.format(card.choices.right.text) }}</span><span class="choiceArrow" aria-hidden="true">&#8594;</span>
+                      <RichText :text="game.format(card.choices.right.text)" /><span class="choiceArrow" aria-hidden="true">&#8594;</span>
                   </button>
               </template>
               <button v-else-if="card" class="choiceBtn neutral" :class="{ active: slideDir == 'left' || slideDir == 'right' }" @click="choose('right')">
-                  <span>{{ game.format(card.choices.right.text) || 'Continuer' }}</span><span class="choiceArrow" aria-hidden="true">&#8596;</span>
+                  <RichText :text="game.format(card.choices.right.text) || 'Continuer'" /><span class="choiceArrow" aria-hidden="true">&#8596;</span>
               </button>
           </div>
         </div>
@@ -96,8 +101,9 @@ import DebugJournal from './DebugJournal.vue';
 import CampHeader from './CampHeader.vue';
 import TropicalScene from './TropicalScene.vue';
 import CardIllustration from './CardIllustration.vue';
+import CampCompass from './CampCompass.vue';
+import RichText from './RichText.vue';
 import { TeamCssColor } from 'src/model/Team';
-import { splitRich } from 'src/model/Personalize';
 import { DEBUG } from 'src/debug';
 
 // Durée d'affichage de chaque portrait sur la carte PORTRAITS
@@ -124,7 +130,9 @@ export default defineComponent({
         DebugJournal,
         CampHeader,
         TropicalScene,
-        CardIllustration
+        CardIllustration,
+        CampCompass,
+        RichText
     },
     data: function(){
         return {
@@ -189,6 +197,15 @@ export default defineComponent({
         portrait(){
             return this.game.candidates[this.portraitIndex];
         },
+        // Carte de vie de camp en cours (hors tractation) : contenu structuré de la carte boussole (CampLife.view)
+        campView(){
+            const camp = this.game.challenges.CAMP_LIFE;
+            const ownCard = !!this.card && !!this.card.challenge && this.card.challenge.id == 'CAMP_LIFE';
+            return ownCard && camp && !camp.talk ? camp.view : null;
+        },
+        playerTeamColor(){
+            return TeamCssColor[this.game.getEntityByName('{player}').team] || '';
+        },
         // Options de swipe disponibles : gauche et droite, plus haut / bas quand la carte les propose avec un texte non vide
         choiceList(){
             if(!this.card){
@@ -222,10 +239,6 @@ export default defineComponent({
         }
     },
     methods:{
-        // Découpe un texte pour surligner le prénom du joueur (marqueurs de Personalize.js)
-        segments(text){
-            return splitRich(text || '');
-        },
         teamCss(color){
             return TeamCssColor[color] || 'var(--wood)';
         },
@@ -556,31 +569,6 @@ export default defineComponent({
 }
 .fourWay .choiceBtn.right{
     grid-area: right;
-}
-/* Résultat d'un jet de dé : symbole de la stat testée sur fond vert (réussite) ou rouge (échec) ; plusieurs labels côte à côte pour un jet joint */
-.rollGroup{
-    display: inline-flex;
-    gap: 2px;
-    vertical-align: middle;
-}
-.rollLabel{
-    padding: 0 6px;
-    border-radius: 10px;
-    font-size: 0.95em;
-    line-height: 1.5;
-    color: #fff;
-    background-color: #2e7d32;
-}
-.rollLabel.fail{
-    background-color: #c62828;
-}
-/* Prénom du joueur dans les comptes rendus d'action : surligné pour le démarquer */
-.me{
-    padding: 0 4px;
-    border-radius: 4px;
-    font-weight: 700;
-    color: var(--wood-dark);
-    background-color: var(--amber);
 }
 /* Compte rendu d'une équipe pendant une épreuve : bordure de la couleur de l'équipe ; l'équipe adverse en plus petit */
 .teamSection{

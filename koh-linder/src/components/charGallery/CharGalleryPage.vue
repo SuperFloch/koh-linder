@@ -31,7 +31,7 @@
                 <div class="bio" v-if="selected.bio">{{ selected.bio }}</div>
                 <div class="attributes">
                     <div v-for="(value, attr) in selected.attributes" :key="attr" class="attribute">
-                        <span class="attrName statIcon" :title="attr">{{ icon(attr) }}</span>
+                        <span class="attrName statIcon" :title="attr"><StatIcon :stat="attr" size="1.3em" /></span>
                         <span class="attrBar"><span class="attrFill" :style="{ width: Math.min(value, 10) * 10 + '%' }"></span></span>
                         <span class="attrValue">{{ value }}</span>
                     </div>
@@ -43,8 +43,9 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
-import { RarityLabel, STAT_ICONS } from 'src/model/Character';
+import { RarityLabel } from 'src/model/Character';
 import { isUnlocked } from 'src/content/ProfileStore';
+import StatIcon from 'src/components/game/StatIcon.vue';
 
 /**
  * Galerie de tous les personnages de la réserve, en grille : on y échange ses Koh-points contre le droit de les jouer.
@@ -52,6 +53,7 @@ import { isUnlocked } from 'src/content/ProfileStore';
  */
 export default defineComponent({
   name: 'CharGalleryPage',
+  components: { StatIcon },
   emits: ['back', 'unlock'],
   props: {
     characters: {
@@ -72,10 +74,6 @@ export default defineComponent({
     },
     rarityLabel(rarity){
         return RarityLabel[rarity];
-    },
-    // Symbole d'une stat (bras, cerveau, nageur, danseuse, yeux, sourire)
-    icon(attr){
-        return STAT_ICONS[attr];
     },
     rarityKey(character){
         return (character.rarity || '').toLowerCase();

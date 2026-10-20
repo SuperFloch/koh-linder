@@ -69,6 +69,18 @@ const ACTION_LABELS = {
     PLANTS: "plantes", FISH: "pêche", HARPOON: "harpon", WATER: "eau", WOOD: "bois", BUILD: "construction", FIRE: "feu", TALK: "discussion", PAUSE: "repos", SWIM: "baignade"
 };
 
+/** Noms courts des tâches d'un lieu, en détail des options « Forêt », « Rester au camp », « Mer » de la carte boussole. */
+const ACTION_SHORT = {
+    PLANTS: "plantes", FISH: "coquillages", HARPOON: "harpon", WATER: "eau", WOOD: "bois", BUILD: "construire", FIRE: "feu",
+    PAUSE: "repos", SWIM: "baignade", TALK: "discuter"
+};
+/** Intitulés des options de la carte boussole (le détail — stat, difficulté, gains — est dans des pastilles à part). */
+const ACTION_TITLES = {
+    WAKE_CALM: "Se lever tranquillement", WAKE_RISE: "Se lever directement", FEAST: "Festin", RATION: "Rationner",
+    PLANTS: "Cueillir des plantes", FISH: "Chercher des coquillages", HARPOON: "Pêcher au harpon", WATER: "Chercher de l'eau",
+    WOOD: "Ramasser du bois", BUILD: "Construire", FIRE: "Faire du feu", TALK: "Discuter", PAUSE: "Se reposer", SWIM: "Se baigner"
+};
+
 /** Les quatre sens de swipe, dans l'ordre d'affichage. */
 const DIRECTIONS = ["left", "up", "right", "down"];
 
@@ -222,6 +234,8 @@ class CampLife extends Challenge {
         this.actionsDone = 0;     // actions déjà dépensées par le joueur dans la période
         this.node = "ROOT";       // nœud courant de l'arbre des tâches
         this.log = "";            // compte rendu de la dernière action du joueur
+        this.notice = "";         // refus d'une action impossible (pas assez de bois...), montré sur la carte boussole
+        this.view = null;         // contenu structuré de la carte boussole (voir `buildView`), lu par l'interface
         this.turnNotes = [];      // évènements du tour concernant le joueur (aide au feu, extinction du feu...)
         this.risers = {};         // couleur d'équipe -> noms de ceux qui se sont levés directement (réveil)
         this.finished = false;
@@ -280,6 +294,7 @@ class CampLife extends Challenge {
             this.talkResult = step.log;
             return this.runAction(game, card, kind, () => this.perform(game, player, Action.TALK));
         }
+        this.notice = "";
         const choice = this.choiceNode(kind)[leftOrRight];
         if (!choice) {
             // Sens sans option (ex: haut sans kit de pêche) : rien ne se passe
@@ -295,6 +310,7 @@ class CampLife extends Challenge {
         if (!check.ok) {
             // Action impossible pour le moment : rien n'est dépensé, retour au premier choix (jamais d'impasse dans l'arbre)
             this.log = check.reason;
+            this.notice = check.reason;
             this.node = "ROOT";
             this.refresh(game);
             return "ID:" + card.id;
@@ -539,6 +555,124 @@ class CampLife extends Challenge {
             (groups[label] = groups[label] || []).push(m.name);
         });
         return Object.entries(groups).map(([label, names]) => label + " : " + names.join(", ")).join(" · ");
+    }
+    /**
+     * Description d'une option pour la carte boussole : intitulé, détail, stats testées, difficulté et pastilles (gain, coût, info).
+     * Les difficultés sont des mots, jamais des seuils chiffrés de jets, et rien ne révèle les stats des candidats.
+     */
+    optionInfo(game, camp, choice, kind) {
+        const p = this.params;
+        if (choice.node) {
+            // Lieu de l'arbre des tâches : ses tâches en détail (sans « discuter », proposé partout)
+            const sub = TASK_TREE[choice.node];
+            const tasks = DIRECTIONS.map((d) => sub[d]).filter((o) => o && o.action != Action.TALK && (!o.if || o.if(camp)))
+                .map((o) => ACTION_SHORT[o.action]);
+            return { label: choice.label, place: choice.node, sub: tasks.join(" · "), stats: [], level: "", chips: [] };
+        }
+        const a = choice.action;
+        const gain = (text) => ({ kind: "gain", text });
+        const cost = (text) => ({ kind: "cost", text });
+        const info = (text) => ({ kind: "info", text });
+        var stats = [];
+        var level = "";
+        var label = ACTION_TITLES[a] || choice.label;
+        const chips = [];
+        switch (a) {
+            case Action.WOOD: chips.push(gain("+" + p.woodAmount + " bois")); break;
+            case Action.WATER:
+                if (camp.equipements.waterSource) {
+                    chips.push(gain("+" + p.waterAmount + " eau"));
+                } else {
+                    label = "Chercher une source"; stats = ["OBS"]; level = "très difficile"; chips.push(gain("source d'eau"));
+                }
+                break;
+            case Action.PLANTS: stats = ["INT"]; level = "difficile"; chips.push(gain("+" + p.plantsFailFood + " à +" + p.plantsSuccessFood + " vivres")); break;
+            case Action.FISH: stats = ["OBS"]; level = "facile"; chips.push(gain("+" + p.fishFailFood + " à +" + p.fishSuccessFood + " vivres")); break;
+            case Action.HARPOON: stats = ["SWI", "OBS"]; level = "difficile"; chips.push(gain("0 à +" + p.harpoonSuccessFood + " vivres")); break;
+            case Action.SWIM: chips.push(gain("+" + p.swimEnergy + " énergie")); break;
+            case Action.PAUSE: chips.push(gain("+" + p.pauseEnergy + " énergie")); break;
+            case Action.FIRE:
+                if (camp.equipements.fire) {
+                    label = "Le feu brûle";
+                } else {
+                    stats = ["INT"]; level = "très difficile"; chips.push(info("à " + p.fireGroup), info(p.fireMinWood + " bois min."));
+                }
+                chips.push(cost("−" + p.fireEnergy + " énergie"));
+                break;
+            case Action.BUILD: {
+                const id = camp.currentProject();
+                if (id) {
+                    const project = CAMP_PROJECTS[id];
+                    label = project.name + " " + camp.projectSteps(id) + "/" + project.steps;
+                    stats = ["INT"];
+                    level = project.difficulty <= 9 ? "facile" : (project.difficulty <= 11 ? "moyen" : "difficile");
+                    chips.push(cost("−" + project.wood + " bois"));
+                } else {
+                    label = "Plus rien à construire";
+                }
+                break;
+            }
+            case Action.TALK: stats = ["SOC"]; chips.push(info(kind == PeriodKind.TASK ? "tractation" : "au coin du feu")); break;
+            case Action.WAKE_CALM: stats = ["SOC"]; level = "facile"; chips.push(gain("+" + p.wakeCalmEnergy + " énergie")); break;
+            case Action.WAKE_RISE: stats = ["SOC"]; level = "facile"; chips.push(info("croiser un lève-tôt")); break;
+            case Action.FEAST:
+                chips.push(gain("+" + (p.feastEnergy + (camp.equipements.fire ? p.feastFireBonus : 0)) + " énergie"), cost("−" + p.feastFood + " vivres / pers."));
+                break;
+            case Action.RATION: chips.push(gain("+" + p.rationEnergy + " énergie"), cost("−" + p.rationFood + " vivre / pers.")); break;
+        }
+        const energy = kind == PeriodKind.TASK && a != Action.FIRE ? p.taskEnergy[a] || 0 : 0;
+        if (energy > 0) {
+            chips.push(cost("−" + energy + " énergie"));
+        }
+        return { label, place: null, sub: "", stats, level, chips };
+    }
+    /**
+     * Contenu structuré de la carte boussole (`this.view`) : chaque option est placée dans le sens de son swipe, avec les
+     * coéquipiers qui ont choisi la même chose (leurs avatars). Pas de compte rendu d'action : seul un refus est signalé.
+     */
+    buildView(game, kind, node) {
+        const player = game.getEntityByName("{player}");
+        const camp = game.teamOf(player).camp;
+        const mates = game.teamMembers(player.team).filter((m) => !m.isPlayer && this.planned[m.name]);
+        const who = (m) => ({ name: m.name, sex: m.sex });
+        // Actions auxquelles mène une option : elle-même, ou toutes celles d'un lieu (sans « discuter », proposé partout)
+        const actionsOf = (choice) => (choice.node
+            ? DIRECTIONS.map((d) => TASK_TREE[choice.node][d]).filter((o) => o && o.action != Action.TALK).map((o) => o.action)
+            : [choice.action]);
+        const placed = new Set();
+        const options = DIRECTIONS.filter((dir) => node[dir]).map((dir) => {
+            const choice = node[dir];
+            const actions = actionsOf(choice);
+            const people = mates.filter((m) => actions.includes(this.planned[m.name]));
+            people.forEach((m) => placed.add(m.name));
+            const check = choice.action ? this.availability(game, player, choice.action) : { ok: true, reason: "" };
+            return { dir, ...this.optionInfo(game, camp, choice, kind), people: people.map(who), blocked: check.ok ? "" : check.reason };
+        });
+        // Au premier choix des tâches, ceux qui veulent discuter (option proposée dans chaque lieu) ; dans un lieu, on ne montre que
+        // les coéquipiers de ce lieu
+        const elsewhere = kind == PeriodKind.TASK && this.node == "ROOT"
+            ? mates.filter((m) => !placed.has(m.name) && this.planned[m.name] == Action.TALK).map((m) => ({ ...who(m), action: ACTION_LABELS[Action.TALK] }))
+            : [];
+        const total = PERIOD_ACTIONS[this.period];
+        const place = this.node != "ROOT" ? DIRECTIONS.map((d) => TASK_TREE.ROOT[d]).find((o) => o && o.node == this.node) : null;
+        var hint = "";
+        if (kind == PeriodKind.WAKE) {
+            const up = (this.risers[player.team] || []).length;
+            hint = up ? up + " coéquipier" + (up > 1 ? "s sont" : " est") + " déjà debout." : "Personne n'est encore debout.";
+        }
+        return {
+            period: PERIOD_LABELS[this.period],
+            action: total > 1 ? (this.actionsDone + 1) + " / " + total : "",
+            place: place ? place.label : "",
+            placeKey: place ? place.node : "",
+            step: kind == PeriodKind.TASK ? (this.node == "ROOT" ? "Choix 1 / 2" : "Choix 2 / 2") : "",
+            question: node.question,
+            hint,
+            notice: this.notice,
+            player: who(player),
+            options,
+            elsewhere
+        };
     }
     /**
      * Carte nuit tirée au hasard (probabilités en %, le reste réparti à parts égales entre les cartes sans poids).
@@ -1097,6 +1231,8 @@ class CampLife extends Challenge {
         // Haut / bas : vides quand le nœud n'a pas ces options (la carte ne propose alors pas ce sens de swipe)
         game.vars.campUp = node.up ? label(node.up) : "";
         game.vars.campDown = node.down ? label(node.down) : "";
+        // Carte boussole (interface) : pas pendant une tractation, qui garde sa carte de texte
+        this.view = this.talk ? null : this.buildView(game, kind, node);
         game.period = this.period;
     }
 }

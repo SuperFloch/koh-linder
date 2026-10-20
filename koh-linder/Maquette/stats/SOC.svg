@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Social (SOC)">
+  <circle cx="12" cy="12" r="11" fill="#d9772e" stroke="#1a100d" stroke-width="1.5"/>
+  <!-- Sourire -->
+  <circle cx="8.8" cy="9.8" r="1.4" fill="#f2e6bf"/>
+  <circle cx="15.2" cy="9.8" r="1.4" fill="#f2e6bf"/>
+  <path d="M7.4 13.6c1.1 2.2 2.7 3.3 4.6 3.3s3.5-1.1 4.6-3.3" fill="none" stroke="#f2e6bf" stroke-width="2" stroke-linecap="round"/>
+</svg>
