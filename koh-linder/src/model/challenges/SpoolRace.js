@@ -61,7 +61,7 @@ class SpoolRace extends TeamRace {
         this.refresh(game);
     }
     cellLabel(index) {
-        return index == 0 ? "\u{1F3C1}" : (index == this.length ? "\u{1F9F5}" : CARRY_ICONS[STEPS[index - 1]]);
+        return index == 0 ? "@flag" : (index == this.length ? "@spool" : CARRY_ICONS[STEPS[index - 1]]);
     }
     /**
      * Indicateur vertical à gauche de la minimap : hauteur de chaque grimpeur dans la tour (0 = pied, `towerHeight` = sommet).
@@ -71,7 +71,7 @@ class SpoolRace extends TeamRace {
         const h = this.params.towerHeight;
         return {
             size: h,
-            label: "\u{1F5FC}",
+            label: "@tower",
             items: this.colors.map((color) => {
                 const level = this.state[color].level;
                 const value = level <= h ? level : 2 * h - level;

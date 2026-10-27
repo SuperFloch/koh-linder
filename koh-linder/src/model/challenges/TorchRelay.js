@@ -22,7 +22,7 @@ const STEPS = [
     MAST
 ];
 
-const STEP_ICONS = { CARRY: "\u{1F4E6}", DOOR: "\u{1F6AA}", OBSTACLE: "\u{1F6A7}", TORCH: "\u{1F525}", MAST: "\u{1F5FC}" };
+const STEP_ICONS = { CARRY: "@crate", DOOR: "@door", OBSTACLE: "@hurdle", TORCH: "@fire", MAST: "@mast" }; // icônes SVG de la minimap (TrackIcon.vue)
 
 const DEFAULT_PARAMS = {
     ...CARRY_PARAMS,        // seuils de course, porte et obstacle avec charge (voir CarrySteps)
@@ -65,7 +65,7 @@ class TorchRelay extends TeamRace {
         if (index == this.length) {
             return STEP_ICONS[MAST];
         }
-        return index == 0 ? "\u{1F3C1}" : STEP_ICONS[STEPS[index - 1]];
+        return index == 0 ? "@flag" : STEP_ICONS[STEPS[index - 1]];
     }
 
     actTeam(game, color, side) {

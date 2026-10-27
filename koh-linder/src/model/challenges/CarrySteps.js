@@ -10,7 +10,7 @@ const CarryStep = {
 };
 const { CARRY, DOOR, OBSTACLE } = CarryStep;
 
-const CARRY_ICONS = { CARRY: "\u{1F4E6}", DOOR: "\u{1F6AA}", OBSTACLE: "\u{1F6A7}" };
+const CARRY_ICONS = { CARRY: "@crate", DOOR: "@door", OBSTACLE: "@hurdle" };
 
 /** Paramètres (fusionnés sous ceux de chaque épreuve). */
 const CARRY_PARAMS = {

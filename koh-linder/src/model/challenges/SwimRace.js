@@ -49,7 +49,7 @@ class SwimRace extends RaceChallenge {
         game.vars.raceLog = "";
     }
     cellLabel(index) {
-        return index == 0 ? "⛵" : (index == this.length ? "\u{1F3DD}" : String(index));
+        return index == 0 ? "@boat" : (index == this.length ? "@island" : String(index));
     }
     /**
      * Tour d'une épreuve de nage : gauche = nager seul, droite = nager avec les autres.

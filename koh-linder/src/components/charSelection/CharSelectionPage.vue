@@ -8,7 +8,7 @@
             <div class="tiki-panel character" v-if="isCreator">
                 <!-- Le choix du portrait sera proposé quand les images d'avatar existeront -->
                 <div class="creatorHead">
-                    <div class="face small-face">{{ creator.name.charAt(0) }}</div>
+                    <div class="face small-face"><Face :id="creator.id" :name="creator.name" /></div>
                     <div class="creatorInfos">
                         <div class="randRow">
                             <span class="randValue">{{ creator.name }}</span>
@@ -38,7 +38,7 @@
 
             <!-- Personnage de la réserve -->
             <div class="tiki-panel character" v-else-if="selected">
-                <div class="face">{{ selected.name.charAt(0) }}</div>
+                <div class="face"><Face :id="selected.id" :name="selected.name" /></div>
                 <div class="name">{{ selected.name }}</div>
                 <div v-if="selected.rarity"><span class="rarity" :class="'rarity-' + selected.rarity.toLowerCase()">{{ rarityLabel(selected.rarity) }}</span></div>
                 <div class="infos">{{ selected.job }}, {{ selected.age }} ans</div>
@@ -61,6 +61,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import Face from 'src/components/game/Face.vue';
 import { Character, RarityLabel } from 'src/model/Character';
 import { randomFirstName, randomJobEntry, randomAge, pick } from 'src/model/CandidateGenerator';
 import { isUnlocked } from 'src/content/ProfileStore';
@@ -68,7 +69,7 @@ import StatIcon from 'src/components/game/StatIcon.vue';
 
 export default defineComponent({
   name: 'CharSelectionPage',
-  components: { StatIcon },
+  components: { StatIcon, Face },
   emits: ['back','start'],
   props: {
     // Réserve complète de personnages ; seuls les personnages débloqués sont proposés

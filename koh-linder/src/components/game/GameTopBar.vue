@@ -6,7 +6,7 @@
             <div class="sub">{{ periodLabel || 'Aventure' }}</div>
         </div>
         <button class="avatar display-font" :style="avatarStyle" :aria-label="'Votre fiche et la liste des candidats'"
-            @click="showCandidates = true">{{ player.name.charAt(0) }}</button>
+            @click="showCandidates = true"><Face :id="player.id" :name="player.name" /></button>
         <div class="side right">
             <div class="energyRow"><span>Énergie</span><span>{{ player.energy }}</span></div>
             <div class="gauge" role="img" :aria-label="'Énergie ' + player.energy + ' sur 100'">
@@ -20,6 +20,7 @@
 <script>
 import { Game } from 'src/model/Game';
 import { defineComponent } from 'vue';
+import Face from 'src/components/game/Face.vue';
 import CandidateListModal from './CandidateListModal.vue';
 import { PERIOD_LABELS } from 'src/model/Time';
 import { TeamCssColor } from 'src/model/Team';
@@ -28,7 +29,8 @@ const TEAM_LABELS = { YELLOW: 'Jaunes', RED: 'Rouges' };
 
 export default defineComponent({
     components: {
-        CandidateListModal
+        CandidateListModal,
+        Face
     },
     props:{
         game: {

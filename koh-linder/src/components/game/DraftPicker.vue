@@ -3,7 +3,7 @@
         <div class="portraits">
             <button v-for="c in sorted" :key="c.name" class="portrait" :class="stateClass(c)" :style="borderStyle(c)"
                 :disabled="!isSelectable(c)" :title="c.name" @click="onSelect(c)">
-                <span class="face">{{ c.name.charAt(0) }}</span>
+                <span class="face"><Face :id="c.id" :name="c.name" /></span>
                 <span class="label">{{ c.name }}</span>
                 <span class="chief" v-if="isChief(c)">&#128081;</span>
             </button>
@@ -12,6 +12,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import Face from 'src/components/game/Face.vue';
 import { Game } from 'src/model/Game';
 import { TeamCssColor } from 'src/model/Team';
 
@@ -20,6 +21,7 @@ import { TeamCssColor } from 'src/model/Team';
  * choix avant de swiper pour valider. Les candidats déjà choisis sont bordés de la couleur de leur équipe et non sélectionnables.
  */
 export default defineComponent({
+    components: { Face },
     props: {
         game: {
             type: Game

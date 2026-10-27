@@ -3,7 +3,7 @@
         <div class="portraits">
             <button v-for="c in options" :key="c.name" class="portrait" :class="{ selected: source.picker.selection == c.name }"
                 :title="c.name" @click="onSelect(c)">
-                <span class="face" :style="borderStyle(c)">{{ c.name.charAt(0) }}</span>
+                <span class="face" :style="borderStyle(c)"><Face :id="c.id" :name="c.name" /></span>
                 <span class="label">{{ c.name }}</span>
             </button>
         </div>
@@ -11,6 +11,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import Face from 'src/components/game/Face.vue';
 import { Game } from 'src/model/Game';
 import { TeamCssColor } from 'src/model/Team';
 
@@ -19,6 +20,7 @@ import { TeamCssColor } from 'src/model/Team';
  * puis swipe pour valider. La source est l'épreuve en cours qui expose un `picker` (voir Game.activePicker).
  */
 export default defineComponent({
+    components: { Face },
     props: {
         game: {
             type: Game

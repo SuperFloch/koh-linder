@@ -54,7 +54,7 @@ class WeightRelay extends RelayRace {
         this.refresh(game);
     }
     cellLabel(index) {
-        return index == 0 ? "\u{1F3C1}" : String(index);
+        return index == 0 ? "@flag" : String(index);
     }
     /** Poids de toutes les équipes sur la case `index`, sous forme de boules de la couleur de l'équipe (0 = poids ramenés). */
     ballsAt(index) {

@@ -1,7 +1,7 @@
 <template>
     <!-- Illustration en haut de carte : l'image de la carte (`img`), sinon une scène dessinée selon le contexte -->
     <div class="illustration" aria-hidden="true">
-        <img v-if="img" :src="img" alt="" />
+        <img v-if="img" :src="imgUrl" alt="" />
         <svg v-else viewBox="0 0 280 150" preserveAspectRatio="xMidYMid slice">
             <rect width="280" height="150" :fill="colors.sky" />
             <template v-if="variant == 'camp'">
@@ -37,6 +37,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { sceneColors } from './scene';
+import { contentUrl } from 'src/content/ContentLoader';
 
 export default defineComponent({
     props: {
@@ -55,6 +56,10 @@ export default defineComponent({
         }
     },
     computed: {
+        // Image de la carte : chemin relatif à public/content/ (ex. images/cartes/ile.png) ou URL absolue
+        imgUrl() {
+            return contentUrl(this.img);
+        },
         colors() {
             return sceneColors(this.variant == 'camp' ? 'camp' : 'beach', this.period);
         }

@@ -6,6 +6,17 @@ import { Character } from "src/model/Character";
  */
 const CONTENT_URL = (import.meta.env.BASE_URL || "/") + "content/";
 
+/**
+ * URL d'un fichier du dossier de contenu (images de cartes, d'arrière-plans, portraits). Une URL absolue (http, data, ou commençant
+ * par « / ») est conservée telle quelle ; sinon le chemin est relatif à `public/content/`.
+ */
+function contentUrl(path) {
+    if (!path || /^(https?:|data:|blob:|\/)/.test(path)) {
+        return path;
+    }
+    return CONTENT_URL + path;
+}
+
 async function fetchJson(relativePath) {
     const response = await fetch(CONTENT_URL + relativePath);
     if (!response.ok) {
@@ -57,4 +68,4 @@ function warnDuplicateIds(cards) {
     });
 }
 
-export { loadContent, CONTENT_URL }
+export { loadContent, CONTENT_URL, contentUrl }

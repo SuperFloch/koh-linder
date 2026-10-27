@@ -4,7 +4,7 @@
             <div class="listTitle">Candidats</div>
             <div class="list">
                 <div v-for="candidate in ordered" :key="candidate.name" class="row" :class="{ eliminated: candidate.eliminated }">
-                    <div class="avatar" :style="avatarStyle(candidate)">{{ candidate.name.charAt(0) }}</div>
+                    <div class="avatar" :style="avatarStyle(candidate)"><Face :id="candidate.id" :name="candidate.name" /></div>
                     <div class="who">
                         <div class="name">{{ candidate.name }}<span v-if="candidate.isPlayer"> (vous)</span></div>
                         <div class="job">{{ candidate.job }}, {{ candidate.age }} ans</div>
@@ -17,6 +17,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import Face from 'src/components/game/Face.vue';
 import { Game } from 'src/model/Game';
 import { TeamCssColor } from 'src/model/Team';
 import { sortForPlayer } from 'src/model/Decision';
@@ -24,6 +25,7 @@ import { sortForPlayer } from 'src/model/Decision';
 // Aucune jauge relationnelle (AFF/REP) n'est affichée ici : elles doivent rester cachées au joueur.
 // Seul l'ordre (joueur en tête, puis meilleurs scores de relation) en découle.
 export default defineComponent({
+    components: { Face },
     props: {
         game: {
             type: Game

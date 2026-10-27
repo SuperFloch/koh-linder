@@ -5,9 +5,9 @@ import { RelationGauge } from "./Character";
 import { generateCandidates, pick, shuffle } from "./CandidateGenerator";
 import { createChallenge } from "./challenges";
 import { GameHistory, HistoryType } from "./GameHistory";
-import { personalize, display, stripStats } from "./Personalize";
+import { personalize, display, stripStats, ROLL_OPEN, ROLL_CLOSE } from "./Personalize";
 import { loadCampProjects } from "./Team";
-import { Tractations } from "./Tractation";
+import { Tractations } from "./camplife/Tractation";
 const GAME_DEFAULT_DURATION = 40;
 // Variables de texte qui rapportent les actions du joueur : « Vous » y devient son prénom surligné
 const PERSONAL_VARS = ["raceLog", "nextStep", "draftLog"];
@@ -49,6 +49,12 @@ class Game {
         this.currentInterlocutor = "";
         // Compte rendu du dernier tour d'une épreuve d'équipe : une section par équipe { color, mine, text } (voir InGamePage)
         this.logSections = [];
+        // Toast de bas de page (résultat d'une action, résultats de jets d'une épreuve) : { id, rows: [{ text, color, mine }], duration }
+        // Voir `toast` ; l'interface l'affiche pendant `duration` ms.
+        this.toastMessage = null;
+        this.toastSeq = 0;
+        // Signes des variations d'AFF qui concernent le joueur pendant une action (null hors action), pour afficher un smiley
+        this.affWatch = null;
         // Variables disponibles dans les textes des cartes : {region}, {lastRoll}...
         this.vars = {
             region: pick(content.resources.regions.values),
@@ -126,6 +132,7 @@ class Game {
             nextString = this.rollDice(currentCard.dice);
         } else if (currentCard.type == CardType.CHALLENGE_TURN) {
             nextString = this.getChallenge(currentCard.challenge.id).playTurn(this, leftOrRight, currentCard);
+            this.toastRolls(currentCard.challenge.id);
         }
         var nextCard = this.getNextCard(nextString, currentCard);
         if (this.pendingCards.length) {
@@ -152,6 +159,37 @@ class Game {
      */
     get activeChallenge() {
         return Object.values(this.challenges).find((c) => c.visible) || null;
+    }
+    /**
+     * Affiche un toast en bas de page.
+     * @param {Object[]|string} rows lignes { text, color, mine } (un texte seul est accepté)
+     * @param {number} duration durée d'affichage en ms (1000 pour un simple résultat)
+     */
+    toast(rows, duration) {
+        const list = (typeof rows == "string" ? [{ text: rows }] : rows).filter((r) => r && r.text);
+        if (list.length) {
+            this.toastMessage = { id: ++this.toastSeq, rows: list, duration: duration || 1000 };
+        }
+    }
+    /** Smiley des variations d'AFF relevées pendant une action (content si la somme est positive, mécontent si négative, jamais le montant). */
+    affSmiley() {
+        const sum = (this.affWatch || []).reduce((s, v) => s + v, 0);
+        return sum > 0 ? "🙂" : (sum < 0 ? "🙁" : "");
+    }
+    /**
+     * Toast des résultats de jets du dernier tour d'une épreuve d'équipe : uniquement les labels (symbole de la stat sur fond vert ou
+     * rouge), une ligne par équipe (celle du joueur d'abord). Le détail des actions est lu sur la minimap.
+     */
+    toastRolls(challengeId) {
+        if (challengeId == "CAMP_LIFE" || challengeId == "COUNCIL" || !this.logSections || !this.logSections.length) {
+            return;
+        }
+        const re = new RegExp(ROLL_OPEN + "[01][^" + ROLL_CLOSE + "]*" + ROLL_CLOSE, "g");
+        const rows = this.logSections.map((s) => {
+            const tokens = display(personalize(s.text, this.getEntityByName("{player}").name)).match(re);
+            return tokens ? { text: tokens.join(" "), color: s.color, mine: s.mine } : null;
+        }).filter((r) => r);
+        this.toast(rows, 1500);
     }
     /**
      * Choix d'un nom au clic sur un portrait (tractation « détourner », vote du conseil) : épreuve en cours qui expose un `picker`
@@ -192,6 +230,9 @@ class Game {
                 var gauge = effect.gauge || RelationGauge.AFF;
                 var relationTargets = this.getTargets(effect.target, effect.about);
                 relationTargets.forEach((c) => c.changeRelation(about.name, gauge, effect.value));
+                if (this.affWatch && gauge == RelationGauge.AFF && (about.isPlayer || relationTargets.some((c) => c.isPlayer))) {
+                    this.affWatch.push(Math.sign(Number(effect.value)));
+                }
                 // Tout changement de plus de 1 en AFF ou en REP s'inscrit dans l'historique (sauf `history: false`,
                 // quand l'appelant inscrit lui-même une entrée groupée)
                 if (effect.history !== false && Math.abs(Number(effect.value)) > 1) {

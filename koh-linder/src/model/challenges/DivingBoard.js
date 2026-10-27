@@ -42,7 +42,7 @@ class DivingBoard extends TeamRace {
         this.refresh(game);
     }
     cellLabel(index) {
-        return index == 0 ? "\u{1F3C1}" : (index % 4 == 0 ? this.minutes(index) + "'" : "");
+        return index == 0 ? "@flag" : (index % 4 == 0 ? this.minutes(index) + "'" : "");
     }
     minutes(tests) {
         return tests * this.params.minutesPerTest;

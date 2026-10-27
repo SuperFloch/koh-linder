@@ -39,7 +39,7 @@ class DiveRelay extends RelayRace {
         this.refresh(game);
     }
     cellLabel(index) {
-        return index == 0 ? "\u{1F30A}" : (index == this.length ? "\u{1F4FF}" : String(index));
+        return index == 0 ? "@wave" : (index == this.length ? "@necklace" : String(index));
     }
     threshold(collar) {
         return Math.ceil(this.params.baseThreshold + this.params.perCollar * collar);

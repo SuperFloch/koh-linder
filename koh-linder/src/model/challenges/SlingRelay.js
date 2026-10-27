@@ -53,7 +53,7 @@ class SlingRelay extends RelayRace {
         this.refresh(game);
     }
     cellLabel(index) {
-        return index == 0 ? "\u{1F3AF}" : String(index);
+        return index == 0 ? "@target" : String(index);
     }
     wantsHardest(diver, st) {
         return 21 + diver.attributes.OBS + diver.attributes.AGI >= st.targets[st.targets.length - 1] - 2;

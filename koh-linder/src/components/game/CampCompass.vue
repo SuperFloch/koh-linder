@@ -24,23 +24,24 @@
                     <span v-for="(c, i) in o.chips" :key="i" class="chip" :class="c.kind">{{ c.text }}</span>
                 </span>
                 <span v-if="o.people.length" class="people" :title="o.people.map((p) => p.name).join(', ')">
-                    <span v-for="p in o.people.slice(0, maxAvatars)" :key="p.name" class="avatar" :style="avatarStyle(p)">{{ p.name.charAt(0) }}</span>
+                    <span v-for="p in o.people.slice(0, maxAvatars)" :key="p.name" class="avatar" :style="avatarStyle(p)"><Face :id="p.id" :name="p.name" /></span>
                     <span v-if="o.people.length > maxAvatars" class="avatar more">+{{ o.people.length - maxAvatars }}</span>
                 </span>
                 <span v-if="o.blocked" class="blockedNote">indisponible</span>
             </button>
-            <div class="center display-font" :style="{ borderColor: teamColor || 'var(--amber)' }" :title="view.player.name">{{ view.player.name.charAt(0) }}</div>
+            <div class="center display-font" :style="{ borderColor: teamColor || 'var(--amber)' }" :title="view.player.name"><Face :id="view.player.id" :name="view.player.name" /></div>
         </div>
 
         <!-- Coéquipiers dont le choix n'est pas parmi les options affichées (ex. « discuter », proposé dans chaque lieu) -->
         <div v-if="view.elsewhere.length" class="elsewhere">
-            <span v-for="p in view.elsewhere" :key="p.name" class="avatar small" :style="avatarStyle(p)" :title="p.name">{{ p.name.charAt(0) }}</span>
+            <span v-for="p in view.elsewhere" :key="p.name" class="avatar small" :style="avatarStyle(p)" :title="p.name"><Face :id="p.id" :name="p.name" /></span>
             <span>{{ elsewhereText }}</span>
         </div>
     </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
+import Face from 'src/components/game/Face.vue';
 import StatIcon from './StatIcon.vue';
 
 // Couleurs d'avatar (en attendant les portraits) : une par candidat, tirée de son prénom
@@ -49,7 +50,8 @@ const ARROWS = { left: '←', up: '↑', right: '→', down: '↓' };
 
 export default defineComponent({
     components: {
-        StatIcon
+        StatIcon,
+        Face
     },
     emits: ['choose'],
     props: {

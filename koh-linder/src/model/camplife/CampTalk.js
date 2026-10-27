@@ -2,7 +2,7 @@ import { il, mark } from "../Personalize";
 import { EffectType } from "../Effect";
 import { RelationGauge, RollContext } from "../Character";
 import { HistoryType } from "../GameHistory";
-import { PitchKind } from "../Tractation";
+import { PitchKind } from "./Tractation";
 
 /** Accord selon le sexe : forme masculine ou féminine. */
 function fem(candidate, masculine, feminine) {

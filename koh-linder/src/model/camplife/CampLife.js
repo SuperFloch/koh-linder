@@ -6,9 +6,9 @@ import { EffectType } from "../Effect";
 import { RelationGauge, RollContext } from "../Character";
 import { HistoryType } from "../GameHistory";
 import { CAMP_PROJECTS } from "../Team";
-import { PitchKind, TRACTATION_PARAMS } from "../Tractation";
+import { PitchKind, TRACTATION_PARAMS } from "./Tractation";
 import { Period, PERIOD_ORDER, PERIOD_LABELS, PERIOD_ACTIONS, PeriodKind, PERIOD_KINDS } from "../Time";
-import { Challenge } from "./Challenge";
+import { Challenge } from "../challenges/Challenge";
 import { Council } from "./Council";
 import { TalkFlow } from "./CampTalk";
 
@@ -253,6 +253,8 @@ class CampLife extends Challenge {
         this.councilHeld = {};    // jour -> true : le conseil de ce jour a déjà eu lieu
         this.dayLog = [];         // résultats d'épreuves { day, text }, résumés par Denis au conseil
         this.turnCard = null;     // { id, onFinish } de la carte de vie de camp, pour y revenir après un conseil
+        this.results = [];        // résultats courts de l'action du joueur, montrés dans un toast (voir `showResult`)
+        this.mealDecision = {};   // couleur d'équipe -> { action, feast, ration } : le repas est voté par l'équipe
     }
     /** Portraits à choisir pendant une tractation (« détourner »), consultés par l'interface. */
     get picker() {
@@ -320,12 +322,64 @@ class CampLife extends Challenge {
             const partner = this.talkPartner(game, player);
             if (partner && game.teamMembers(player.team).length >= 3) {
                 this.talk = new TalkFlow(game, this, player, partner);
+                game.affWatch = [];
                 this.log = "";
                 this.refresh(game);
                 return "ID:" + card.id;
             }
         }
+        if (kind == PeriodKind.MEAL) {
+            this.decideMeals(game, choice.action);
+        }
         return this.runAction(game, card, kind, () => this.perform(game, player, choice.action));
+    }
+    /**
+     * Vote du repas, par équipe : la majorité des membres (le joueur compte pour un) choisit entre festin et ration, et TOUT LE MONDE
+     * applique ce choix (égalité de traitement dans le camp) ; en cas d'égalité, le choix du joueur l'emporte dans son équipe. Faute
+     * de vivres pour que chacun fasse un festin (3 par candidat), l'équipe rationne.
+     */
+    decideMeals(game, playerAction) {
+        this.mealDecision = {};
+        game.teams.forEach((team) => {
+            const members = game.teamMembers(team.color);
+            if (!members.length) {
+                return;
+            }
+            const choices = members.map((m) => (m.isPlayer ? playerAction : this.planned[m.name]));
+            const feast = choices.filter((a) => a == Action.FEAST).length;
+            const ration = members.length - feast;
+            const hasPlayer = members.some((m) => m.isPlayer);
+            let action = feast > ration ? Action.FEAST : (feast < ration ? Action.RATION : (hasPlayer ? playerAction : (Math.random() < 0.5 ? Action.FEAST : Action.RATION)));
+            let short = false;
+            if (action == Action.FEAST && team.camp.resources.food < members.length * this.params.feastFood) {
+                action = Action.RATION;
+                short = true;
+            }
+            this.mealDecision[team.color] = { action, feast, ration, short };
+        });
+    }
+    /** Ajoute un résultat court (« +4 bois ») au toast de l'action du joueur. */
+    result(text) {
+        this.results.push(text);
+    }
+    /**
+     * Toast de bas de page de l'action du joueur : les résultats courts (« +4 bois », « +2 énergie ») pendant 1 seconde, suivis d'un
+     * smiley si l'affection a varié (content ou mécontent, jamais le montant) ; un compte rendu narratif (réveil, feu, discussion...)
+     * y figure aussi, plus longtemps.
+     */
+    showResult(game, narrative, smiley) {
+        const parts = [...this.results];
+        if (narrative) {
+            parts.push(game.personalize(narrative));
+        }
+        if (smiley) {
+            parts.push(smiley);
+        }
+        if (!parts.length) {
+            return;
+        }
+        const duration = narrative ? Math.max(2500, Math.min(7000, 1500 + 45 * narrative.length)) : 1000;
+        game.toast([{ text: parts.join("  ") }], duration);
     }
     /**
      * Dépense l'action du joueur (`playerAction` la réalise et renvoie son compte rendu), fait jouer les non-joueurs, passe à la
@@ -334,6 +388,8 @@ class CampLife extends Challenge {
     runAction(game, card, kind, playerAction) {
         this.turnNotes = [];
         this.round = {};
+        this.results = [];
+        game.affWatch = game.affWatch || []; // une tractation en cours a déjà commencé à relever les variations d'affection
         const playerLog = playerAction();
         if (kind != PeriodKind.WAKE) {
             // Les non-joueurs réalisent le choix qu'ils avaient déjà fait AVANT le joueur (voir planNpcs)
@@ -341,6 +397,9 @@ class CampLife extends Challenge {
         }
         this.bathe(game);
         const actionLog = [playerLog, ...this.turnNotes].filter((l) => l).join(" ");
+        // Le smiley d'affection ne compte que l'action elle-même (pas la nuit qui suit)
+        const smiley = game.affSmiley();
+        game.affWatch = null;
         this.log = "";
         this.turnNotes = [];
         this.node = "ROOT";
@@ -355,6 +414,8 @@ class CampLife extends Challenge {
         const dayEnds = !!(this.nightEvent || this.pendingCouncil || this.pendingChallenge || this.finished);
         this.log = dayEnds ? this.log : [actionLog, this.log].filter((l) => l).join(" ");
         const result = dayEnds ? actionLog : "";
+        // Résultats courts et smiley en toast ; le récit d'une dernière action de journée a sa carte « Fin de journée »
+        this.showResult(game, dayEnds ? "" : actionLog, smiley);
         this.refresh(game);
         if (this.pendingChallenge && !this.finished) {
             // Jour d'épreuve : une épreuve de la collection (cards/challenges), tirée au sort dans le bon contexte (équipe avant la
@@ -446,7 +507,10 @@ class CampLife extends Challenge {
             group.forEach((a) => group.filter((b) => b !== a).forEach((b) => a.changeRelation(b.name, RelationGauge.AFF, this.params.swimAff)));
             const player = group.find((c) => c.isPlayer);
             if (player && group.length > 1) {
-                this.turnNotes.push("Vous vous baignez avec " + group.filter((c) => !c.isPlayer).map((c) => c.name).join(", ") + ".");
+                // Se baigner à plusieurs rapproche : smiley content dans le toast de l'action
+                if (game.affWatch) {
+                    game.affWatch.push(1);
+                }
             }
         });
     }
@@ -634,7 +698,7 @@ class CampLife extends Challenge {
         const player = game.getEntityByName("{player}");
         const camp = game.teamOf(player).camp;
         const mates = game.teamMembers(player.team).filter((m) => !m.isPlayer && this.planned[m.name]);
-        const who = (m) => ({ name: m.name, sex: m.sex });
+        const who = (m) => ({ id: m.id, name: m.name, sex: m.sex });
         // Actions auxquelles mène une option : elle-même, ou toutes celles d'un lieu (sans « discuter », proposé partout)
         const actionsOf = (choice) => (choice.node
             ? DIRECTIONS.map((d) => TASK_TREE[choice.node][d]).filter((o) => o && o.action != Action.TALK).map((o) => o.action)
@@ -659,6 +723,8 @@ class CampLife extends Challenge {
         if (kind == PeriodKind.WAKE) {
             const up = (this.risers[player.team] || []).length;
             hint = up ? up + " coéquipier" + (up > 1 ? "s sont" : " est") + " déjà debout." : "Personne n'est encore debout.";
+        } else if (kind == PeriodKind.MEAL) {
+            hint = "Le repas est voté par l'équipe : la majorité l'emporte, tout le monde mange pareil (égalité : votre choix).";
         }
         return {
             period: PERIOD_LABELS[this.period],
@@ -914,6 +980,11 @@ class CampLife extends Challenge {
         if (!c.isPlayer && !this.availability(game, c, action).ok) {
             action = Action.PAUSE;
         }
+        // Le repas est un vote d'équipe : tout le monde applique le choix de la majorité
+        const decided = (action == Action.FEAST || action == Action.RATION) ? this.mealDecision[c.team] : null;
+        if (decided) {
+            action = decided.action;
+        }
         this.actionCount[c.name]++;
         this.round[c.name] = action;
         const taskCost = p.taskEnergy[action];
@@ -971,18 +1042,20 @@ class CampLife extends Challenge {
                 const feast = action == Action.FEAST && camp.resources.food >= p.feastFood;
                 const cost = feast ? p.feastFood : p.rationFood;
                 const fed = camp.spend("food", cost);
+                let gained = 0;
                 if (fed) {
-                    c.changeEnergy((feast ? p.feastEnergy + (camp.equipements.fire ? p.feastFireBonus : 0) : p.rationEnergy) + camp.bonus("MEAL", "energy"));
+                    gained = (feast ? p.feastEnergy + (camp.equipements.fire ? p.feastFireBonus : 0) : p.rationEnergy) + camp.bonus("MEAL", "energy");
+                    c.changeEnergy(gained);
                     if (feast) {
                         game.applyEffect({ type: EffectType.RELATION, gauge: RelationGauge.AFF, target: "TEAM", about: c.name, value: 1 });
                     }
                 }
-                if (!you) {
-                    return "";
+                if (you) {
+                    // Résultat du vote de l'équipe (festin ou ration pour tous) et énergie regagnée
+                    const vote = decided ? " (vote " + decided.feast + "-" + decided.ration + (decided.short ? ", vivres insuffisantes" : "") + ")" : "";
+                    this.result(!fed ? "Plus rien à manger" : (feast ? "Festin" : "Ration") + vote + " : +" + gained + " énergie");
                 }
-                return !fed ? "Il n'y a plus rien à manger : vous vous couchez le ventre vide."
-                    : (feast ? "Vous préparez un vrai festin (-" + cost + " nourriture)" + (camp.equipements.fire ? ", réchauffé par le feu" : "") + " : tout le monde se régale."
-                        : (action == Action.FEAST ? "Pas assez de nourriture pour un festin, vous rationnez (-" + cost + " nourriture)." : "Vous rationnez (-" + cost + " nourriture), un petit repas."));
+                return "";
             }
             case Action.FISH: {
                 const rolled = this.rollWithCards(c, "OBS", RollContext.FISH);
@@ -995,7 +1068,10 @@ class CampLife extends Challenge {
                 const ok = roll.total >= p.fishThreshold;
                 const gain = camp.add("food", (ok ? p.fishSuccessFood : p.fishFailFood) + camp.bonus("FISH", "food"));
                 rep(ok ? 2 : -1, c.name + (ok ? " rapporte une belle pêche de coquillages" : " rapporte une pêche de coquillages décevante"));
-                return you ? "Pêche aux coquillages (" + this.rollToString("OBS", roll, p.fishThreshold) + ") : " + (ok ? "belle pêche" : "maigre pêche") + ", +" + gain + " nourriture." : "";
+                if (you) {
+                    this.result("+" + gain + " nourriture");
+                }
+                return "";
             }
             case Action.HARPOON: {
                 // Pêche au harpon (kit de pêche) : jet combiné difficile de SWI et d'OBS (guide local compris)
@@ -1003,7 +1079,10 @@ class CampLife extends Challenge {
                 const outcome = this.combinedRoll(c, "SWI", "OBS", p.harpoonThreshold, guide);
                 const gain = outcome.ok ? camp.add("food", p.harpoonSuccessFood + camp.bonus("HARPOON", "food")) : 0;
                 rep(outcome.ok ? 3 : -1, c.name + (outcome.ok ? " rapporte un beau poisson harponné" : " rate sa pêche au harpon"));
-                return you ? "Pêche au harpon " + outcome.text + " : " + (outcome.ok ? "un beau poisson, +" + gain + " nourriture." : "le poisson file, rien rapporté.") : "";
+                if (you) {
+                    this.result(outcome.ok ? "+" + gain + " nourriture" : "Rien rapporté");
+                }
+                return "";
             }
             case Action.PLANTS: {
                 const rolled = this.rollWithCards(c, "INT", RollContext.PLANTS);
@@ -1013,7 +1092,10 @@ class CampLife extends Challenge {
                 const ok = rolled.roll.total >= p.plantsThreshold;
                 const gain = camp.add("food", (ok ? p.plantsSuccessFood : p.plantsFailFood) + camp.bonus("PLANTS", "food"));
                 rep(ok ? 4 : -1, c.name + (ok ? " rapporte une récolte de plantes nourrissantes exceptionnelle" : " revient presque bredouille de la cueillette"));
-                return you ? "Cueillette (" + this.rollToString("INT", rolled.roll, p.plantsThreshold) + ") : " + (ok ? "vous trouvez des plantes nourrissantes en abondance" : "presque rien de comestible") + ", +" + gain + " nourriture." : "";
+                if (you) {
+                    this.result("+" + gain + " nourriture");
+                }
+                return "";
             }
             case Action.WATER:
             case Action.WOOD: {
@@ -1023,7 +1105,10 @@ class CampLife extends Challenge {
                     const roll = c.rollStat("OBS");
                     const total = roll.total + guide;
                     if (total < p.waterSourceThreshold) {
-                        return you ? "Vous cherchez une source d'eau (OBS " + total + " / " + p.waterSourceThreshold + ") : rien pour l'instant, la recherche doit continuer." : "";
+                        if (you) {
+                            this.result("Source d'eau introuvable");
+                        }
+                        return "";
                     }
                     camp.equipements.waterSource = true;
                     const found = camp.add("water", p.waterSourceWater);
@@ -1031,7 +1116,10 @@ class CampLife extends Challenge {
                     if (!you) {
                         this.turnNotes.push(c.name + " a trouvé une source d'eau ! (+" + found + " eau)");
                     }
-                    return you ? "Vous trouvez une source d'eau (OBS " + total + " / " + p.waterSourceThreshold + ") ! Premier ravitaillement : +" + found + " eau." : "";
+                    if (you) {
+                        this.result("Source d'eau trouvée : +" + found + " eau");
+                    }
+                    return "";
                 }
                 const resource = action == Action.WATER ? "water" : "wood";
                 const amount = (action == Action.WATER ? p.waterAmount : p.woodAmount) + camp.bonus(action, resource);
@@ -1039,7 +1127,10 @@ class CampLife extends Challenge {
                 if (gain > 0) {
                     rep(1);
                 }
-                return you ? (action == Action.WATER ? "Vous rapportez de l'eau" : "Vous rapportez du bois") + " (+" + gain + (gain < amount ? ", la réserve est pleine" : "") + ")." : "";
+                if (you) {
+                    this.result("+" + gain + (action == Action.WATER ? " eau" : " bois") + (gain < amount ? " (réserve pleine)" : ""));
+                }
+                return "";
             }
             case Action.BUILD: {
                 // Une étape du projet en cours : jet d'INT contre la difficulté du projet ; le bois n'est dépensé qu'en cas de réussite
@@ -1048,18 +1139,29 @@ class CampLife extends Challenge {
                 const roll = c.rollStat("INT");
                 const ok = roll.total >= project.difficulty;
                 if (!ok) {
-                    return you ? "Vous peinez sur « " + project.name + " » (" + this.rollToString("INT", roll, project.difficulty) + ") : l'ouvrage n'avance pas." : "";
+                    if (you) {
+                        this.result(project.name + " : pas de progrès");
+                    }
+                    return "";
                 }
                 camp.spend("wood", project.wood);
                 const done = camp.advanceProject(id);
                 // Une étape banale +1 REP ; la dernière, qui termine le projet, est une activité utile (+3)
                 rep(done ? 3 : 1, done ? c.name + " termine le projet de construction du camp : " + project.name : undefined);
-                return you ? "Vous travaillez sur « " + project.name + " » (" + camp.projectSteps(id) + "/" + project.steps + ", -" + project.wood + " bois)"
-                    + (done ? " : terminé ! " + project.bonusText + "." : ".") : "";
+                if (you) {
+                    this.result(project.name + " " + camp.projectSteps(id) + "/" + project.steps + " (−" + project.wood + " bois)");
+                }
+                // Un projet terminé est un évènement : son bonus est annoncé
+                return you && done ? project.name + " est terminé ! " + project.bonusText + "." : "";
             }
-            case Action.SWIM:
-                c.changeEnergy(p.swimEnergy + camp.bonus("SWIM", "energy"));
-                return you ? "Vous vous baignez dans la mer : +" + (p.swimEnergy + camp.bonus("SWIM", "energy")) + " énergie." : "";
+            case Action.SWIM: {
+                const swim = p.swimEnergy + camp.bonus("SWIM", "energy");
+                c.changeEnergy(swim);
+                if (you) {
+                    this.result("+" + swim + " énergie");
+                }
+                return "";
+            }
             case Action.FIRE:
                 return this.tryFire(game, c);
             case Action.TALK: {
@@ -1101,7 +1203,10 @@ class CampLife extends Challenge {
             }
             case Action.PAUSE:
                 c.changeEnergy(p.pauseEnergy + camp.bonus("PAUSE", "energy"));
-                return you ? "Vous vous reposez et reprenez des forces." : "";
+                if (you) {
+                    this.result("+" + (p.pauseEnergy + camp.bonus("PAUSE", "energy")) + " énergie");
+                }
+                return "";
         }
         return "";
     }

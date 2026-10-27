@@ -26,10 +26,10 @@ const Mode = {
 };
 
 const STEP_ICONS = {
-    RUN: "\u{1F3C3}",
-    HURDLE: "\u{1F6A7}",
-    JOINT_RUN: "\u{1F91D}",
-    JOINT_OBSTACLE: "\u{1F9D7}"
+    RUN: "@run",
+    HURDLE: "@hurdle",
+    JOINT_RUN: "@duo",
+    JOINT_OBSTACLE: "@climb"
 };
 
 /** Paramètres des étapes génériques, fusionnés sous les paramètres propres à chaque épreuve (et surchargeables par eux). */

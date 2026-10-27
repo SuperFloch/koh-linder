@@ -1,9 +1,9 @@
 import { pick, shuffle, randInt } from "../CandidateGenerator";
 import { RelationGauge } from "../Character";
 import { HistoryType } from "../GameHistory";
-import { fill, visibleTo, PitchKind } from "../Tractation";
+import { fill, visibleTo, PitchKind } from "./Tractation";
 import { mark } from "../Personalize";
-import { Challenge } from "./Challenge";
+import { Challenge } from "../challenges/Challenge";
 
 const DENIS = "Denis Brognard";
 const ORDINALS = ["premier", "deuxième", "troisième", "quatrième", "cinquième", "sixième", "septième", "huitième", "neuvième", "dixième",

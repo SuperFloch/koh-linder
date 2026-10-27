@@ -24,12 +24,29 @@
                 <g fill="#2f5a26"><path d="M26 580c-30-6-52 6-62 24 22-14 44-16 62-24z" /><path d="M26 580c20-24 46-30 70-22-26 2-48 12-70 22z" /><path d="M26 580c-8-26-30-40-54-40 22 10 40 22 54 40z" /><path d="M374 590c-22-22-50-26-72-14 26 0 50 6 72 14z" /><path d="M374 590c12-26 36-38 60-32-24 6-44 18-60 32z" /><path d="M374 590c-28 2-48 18-54 40 16-20 34-32 54-40z" /></g>
             </template>
         </svg>
+        <!-- Image d'arrière-plan du contenu (public/content/images/backgrounds/), si elle existe : elle remplace le paysage dessiné -->
+        <div v-if="bgUrl" class="photo" :style="{ backgroundImage: 'url(' + bgUrl + ')' }"></div>
         <div class="shade" :style="{ backgroundColor: colors.shade }"></div>
     </div>
 </template>
 <script>
 import { defineComponent } from 'vue'
 import { sceneColors } from './scene';
+import { contentUrl } from 'src/content/ContentLoader';
+
+// Résultat de la recherche de chaque image (URL -> présente ou non), pour ne tester chaque fichier qu'une fois
+const KNOWN = new Map();
+function probe(url) {
+    if (KNOWN.has(url)) {
+        return Promise.resolve(KNOWN.get(url));
+    }
+    return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => { KNOWN.set(url, true); resolve(true); };
+        image.onerror = () => { KNOWN.set(url, false); resolve(false); };
+        image.src = url;
+    });
+}
 
 export default defineComponent({
     props: {
@@ -44,9 +61,33 @@ export default defineComponent({
             default: null
         }
     },
+    data() {
+        return { bgUrl: null };
+    },
     computed: {
         colors() {
             return sceneColors(this.variant, this.period);
+        },
+        // Fichiers d'arrière-plan essayés dans l'ordre : <variante>_<PÉRIODE> puis <variante>, en .jpg puis .png
+        candidates() {
+            const names = [this.period ? this.variant + '_' + this.period : null, this.variant].filter((n) => !!n);
+            return names.flatMap((n) => ['jpg', 'png'].map((ext) => contentUrl('images/backgrounds/' + n + '.' + ext)));
+        }
+    },
+    watch: {
+        candidates: {
+            immediate: true,
+            async handler(list) {
+                this.bgUrl = null;
+                for (const url of list) {
+                    if (await probe(url)) {
+                        if (this.candidates === list) {
+                            this.bgUrl = url;
+                        }
+                        return;
+                    }
+                }
+            }
         }
     }
 })
@@ -67,6 +108,12 @@ export default defineComponent({
 }
 .land rect {
     transition: fill 0.8s;
+}
+.photo {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center bottom;
 }
 .shade {
     position: absolute;

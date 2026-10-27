@@ -8,7 +8,7 @@
         <div class="gallery">
             <div v-for="character in characters" :key="character.id" class="tile tiki-panel"
                 :class="{ locked: !unlocked(character), playable: unlocked(character) }" @click="open(character)">
-                <div class="face" :class="'rarity-' + rarityKey(character)">{{ character.name.charAt(0) }}</div>
+                <div class="face" :class="'rarity-' + rarityKey(character)"><Face :id="character.id" :name="character.name" /></div>
                 <div class="name">{{ character.name }}</div>
                 <div class="status" v-if="unlocked(character)">&#10003; Jouable</div>
                 <button v-else class="tiki-btn unlockBtn" :disabled="profile.kohPoints < character.unlockCost" @click.stop="$emit('unlock', character)">
@@ -24,7 +24,7 @@
         <!-- Fiche détaillée d'un aventurier jouable -->
         <div class="overlay" v-if="selected" @click.self="selected = null">
             <div class="modal tiki-panel">
-                <div class="face big" :class="'rarity-' + rarityKey(selected)">{{ selected.name.charAt(0) }}</div>
+                <div class="face big" :class="'rarity-' + rarityKey(selected)"><Face :id="selected.id" :name="selected.name" /></div>
                 <div class="modalName">{{ selected.name }}</div>
                 <div><span class="rarity" :class="'rarity-' + rarityKey(selected)">{{ rarityLabel(selected.rarity) }}</span></div>
                 <div class="infos">{{ selected.job }}, {{ selected.age }} ans</div>
@@ -43,6 +43,7 @@
 </template>
 <script>
 import { defineComponent } from 'vue'
+import Face from 'src/components/game/Face.vue';
 import { RarityLabel } from 'src/model/Character';
 import { isUnlocked } from 'src/content/ProfileStore';
 import StatIcon from 'src/components/game/StatIcon.vue';
@@ -53,7 +54,7 @@ import StatIcon from 'src/components/game/StatIcon.vue';
  */
 export default defineComponent({
   name: 'CharGalleryPage',
-  components: { StatIcon },
+  components: { StatIcon, Face },
   emits: ['back', 'unlock'],
   props: {
     characters: {

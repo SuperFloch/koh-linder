@@ -61,7 +61,7 @@ class PotteryRelay extends RelayRace {
         this.refresh(game);
     }
     cellLabel(index) {
-        return index == 0 ? "\u{1F3C1}" : (index == this.length ? "\u{1F3FA}" : "\u{1F30A}");
+        return index == 0 ? "@flag" : (index == this.length ? "@pot" : "@wave");
     }
     /** Nage sur `swimCells` cases (test de SWI : 2 cases si réussi, 1 sinon). @returns {number} nombre de tests */
     swim(diver) {

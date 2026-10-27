@@ -1,6 +1,6 @@
-import { pick, shuffle } from "./CandidateGenerator";
-import { decide, DecisionContext, rollD6Modifier } from "./Decision";
-import { HistoryType } from "./GameHistory";
+import { pick, shuffle } from "../CandidateGenerator";
+import { decide, DecisionContext, rollD6Modifier } from "../Decision";
+import { HistoryType } from "../GameHistory";
 
 /**
  * Tractations : influencer les votes du prochain conseil par la discussion (action « Discuter » de la vie de camp, et discussions

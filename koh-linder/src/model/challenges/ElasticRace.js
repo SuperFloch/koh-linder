@@ -46,9 +46,9 @@ class ElasticRace extends TeamRace {
     }
     cellLabel(index) {
         if (index == 0) {
-            return "\u{1FAA7}";
+            return "@stake";
         }
-        return index == this.length ? "\u{1F5E1}" : "\u{1FAB5}" + index;
+        return index == this.length ? "@dagger" : "@stick:" + index;
     }
     /** Case de l'objet visé : le prochain bâton (cases 1 à 5), puis le poignard (case 6). */
     targetCase(color) {

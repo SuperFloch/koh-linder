@@ -38,8 +38,8 @@ const COLORS = [
 
 const ICONS = {
   ...STEP_ICONS,
-  COLOR: "\u{1F3A8}",
-  FIRE: "\u{1F525}"
+  COLOR: "@palette",
+  FIRE: "@fire"
 };
 
 // Paramètres propres à l'épreuve ; ceux des étapes génériques (seuils, énergie...) sont dans STEP_PARAMS (Challenge)
@@ -163,7 +163,7 @@ class FireCourse extends RaceChallenge {
   // --- Affichage ---
 
   cellLabel(index) {
-    return index == 0 ? "\u{1F3C1}" : ICONS[STEPS[index - 1]];
+    return index == 0 ? "@flag" : ICONS[STEPS[index - 1]];
   }
   /** Bordure de l'avatar = couleur piochée (tons pastel), une fois la couleur tirée. */
   avatarBorder(candidate) {

@@ -1,7 +1,7 @@
 import { SwimRace } from "./SwimRace";
 import { FireCourse } from "./FireCourse";
 import { TeamDraft } from "./TeamDraft";
-import { CampLife } from "./CampLife";
+import { CampLife } from "../camplife/CampLife";
 import { TorchRelay } from "./TorchRelay";
 import { ElasticRace } from "./ElasticRace";
 import { DiveRelay } from "./DiveRelay";
@@ -11,7 +11,7 @@ import { SpoolRace } from "./SpoolRace";
 import { SlingRelay } from "./SlingRelay";
 import { DivingBoard } from "./DivingBoard";
 import { WaterPuzzle } from "./WaterPuzzle";
-import { Council } from "./Council";
+import { Council } from "../camplife/Council";
 
 /**
  * Registre des épreuves : identifiant (propriété `target` des effets CHALLENGE_*) -> classe.
